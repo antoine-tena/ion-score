@@ -206,7 +206,7 @@ RECAP_TITLES = {
     "update": "Mise à jour terminée",
     "check": "Contrôles terminés",
     "set": "Paramètres appliqués",
-    "contrat": "Contrat régénéré",
+    "contract": "Contrat régénéré",
     "publish": "Dépôt publié",
 }
 
