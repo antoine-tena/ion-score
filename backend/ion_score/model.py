@@ -50,6 +50,9 @@ LEVELS = ("adopt", "trial", "assess", "hold")
 SCORED_LEVELS = frozenset({"adopt"})
 REGIMES = ("strict", "ratchet", "review")
 PROFILES = ("solo", "association", "company", "university", "enterprise")
+# Who can find a gap, and who can close it (doctrine 5: the script first, Claude next).
+DETECTION = ("script", "approximate", "judgment")
+FIXING = ("script", "judgment")
 # Weighed in this order, the most reliable first (doctrine, principle 3).
 SOURCE_KINDS = ("docs", "advisory", "study", "adoption", "blog")
 # An `adopt` rule whose sources were all checked longer ago is stale: the grid keeps up.
@@ -86,6 +89,8 @@ class Rule:
     since: str
     switch_when: str = ""
     charter_rule: str = ""  # the charter rule that enforces it in kiln's repos
+    detectable: str = "script"  # script, approximate (the script flags, Claude confirms), judgment
+    fixable: str = "judgment"  # script (a converter can), judgment
     settings: Mapping[str, str] = field(default_factory=dict)
     path: Path = Path()
 
@@ -129,6 +134,8 @@ def load_rule(path: Path) -> Rule:
             since=str(data["since"]),
             switch_when=str(data.get("switch_when", "")),
             charter_rule=str(data.get("charter_rule", "")),
+            detectable=str(data.get("detectable", "script")),
+            fixable=str(data.get("fixable", "script" if data.get("fixer") else "judgment")),
             settings={str(key): str(value) for key, value in data.get("settings", {}).items()},
             path=path,
         )
@@ -162,6 +169,8 @@ def problems(rules: list[Rule], today: datetime.date | None = None) -> list[str]
             ("scope", rule.scope, SCOPES),
             ("level", rule.level, LEVELS),
             ("regime", rule.regime, REGIMES),
+            ("detectable", rule.detectable, DETECTION),
+            ("fixable", rule.fixable, FIXING),
         ):
             if value not in allowed:
                 found.append(f"{where}: {name} {value!r} is not one of {', '.join(allowed)}")
@@ -177,6 +186,8 @@ def problems(rules: list[Rule], today: datetime.date | None = None) -> list[str]
             for source in rule.sources
             if source.kind not in SOURCE_KINDS
         ]
+        if rule.is_scored and not rule.detector:
+            found.append(f"{where}: an adopt rule is scored, it needs a detector")
         if rule.is_scored and not any(
             today - source.checked <= SOURCE_MAX_AGE for source in rule.sources
         ):
