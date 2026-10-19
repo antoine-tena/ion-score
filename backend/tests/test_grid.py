@@ -2,6 +2,7 @@
 should, on an example of each."""
 
 import datetime
+import re
 import sys
 from pathlib import Path
 
@@ -72,13 +73,17 @@ def test_the_grid_holds() -> None:
 
 @pytest.mark.parametrize("rule", RULES, ids=lambda rule: rule.id)
 def test_each_rule_can_run(rule: model.Rule) -> None:
-    assert detectors.problems(rule.detector) == []
     assert not rule.fixer or rule.fixer in fixers.FIXERS
     assert set(rule.applies) <= set(facts.KNOWN_FACTS)
-    assert rule.id in CASES, "a rule ships with a passing and a failing example"
+    if rule.detector:
+        assert detectors.problems(rule.detector) == []
+        assert rule.id in CASES, "a detected rule ships with a passing and a failing example"
 
 
-@pytest.mark.parametrize("rule", RULES, ids=lambda rule: rule.id)
+DETECTED = [rule for rule in RULES if rule.detector]
+
+
+@pytest.mark.parametrize("rule", DETECTED, ids=lambda rule: rule.id)
 @pytest.mark.parametrize("expected", ["pass", "fail"])
 def test_each_rule_says_pass_and_fail_where_it_should(
     tmp_path: Path, rule: model.Rule, expected: str
@@ -179,5 +184,32 @@ def test_kiln_grid_lists_and_shows(
 def test_an_unknown_rule_suggests_the_close_ones() -> None:
     from kiln.grid.show import find_rule
 
-    with pytest.raises(KilnError, match="did you mean PINNED-ACTIONS"):
+    with pytest.raises(KilnError, match=r"did you mean PINNED-ACTIONS\?"):
         find_rule("ACTIONS")
+    with pytest.raises(KilnError, match="did you mean PINNED-ACTIONS"):
+        find_rule("PINED-ACTION")
+
+
+def test_a_rule_names_only_charter_rules_kiln_knows() -> None:
+    template = Path(__file__).resolve().parent.parent / "template"
+    known = {
+        found
+        for path in [*template.glob(".claude/rules/kiln/*.jinja"), template / "charter.toml.jinja"]
+        for found in re.findall(r"\[([A-Z0-9+-]{3,})\]|id = \"([A-Z0-9+-]+)\"", path.read_text())
+        for found in found
+        if found
+    }
+
+    assert {rule.charter_rule for rule in RULES if rule.charter_rule} <= known
+
+
+def test_drafts_wait_behind_their_level(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    assert run_kiln(monkeypatch, "grid") == 0
+    default = capsys.readouterr().out
+    assert "PINNED-ACTIONS" in default and "SEALED-DOMAIN" not in default
+    assert "kiln grid --level assess" in default
+
+    assert run_kiln(monkeypatch, "grid", "--level", "assess") == 0
+    assert "SEALED-DOMAIN" in capsys.readouterr().out

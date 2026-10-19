@@ -1,5 +1,7 @@
 """`kiln grid`: the rules kiln holds as the best, listed or shown one by one."""
 
+import difflib
+
 from kiln import ui
 from kiln.grid.model import THEMES, Rule, load_rules
 from kiln.shell import KilnError
@@ -7,18 +9,30 @@ from kiln.shell import KilnError
 LEVEL_COLORS = {"adopt": ui.MOSS, "trial": ui.FIRE, "assess": ui.STONE, "hold": ui.EMBER}
 
 
+# Shown by default: what kiln stands behind today. Drafts (assess) and dropped practices (hold)
+# are asked for by level.
+DEFAULT_LEVELS = frozenset({"adopt", "trial"})
+
+
 def list_rules(*, theme: str | None, scope: str | None, level: str | None) -> None:
-    rules = [
+    matching = [
         rule
         for rule in load_rules()
         if (theme is None or rule.theme == theme)
         and (scope is None or scope in (rule.scope, rule.scope_name))
-        and (level is None or rule.level == level)
     ]
+    rules = [
+        rule
+        for rule in matching
+        if (rule.level == level if level is not None else rule.level in DEFAULT_LEVELS)
+    ]
+    hidden = len(matching) - len(rules) if level is None else 0
     if theme is not None and theme not in THEMES:
         raise KilnError(f"no theme {theme!r}: {', '.join(THEMES)}")
     if not rules:
         print(ui.paint("  no rule matches", ui.STONE))
+        if hidden:
+            print(ui.paint(f"  {hidden} assessed or held: kiln grid --level assess", ui.STONE))
         return
     width = max(len(rule.id) for rule in rules)
     current = ""
@@ -30,6 +44,8 @@ def list_rules(*, theme: str | None, scope: str | None, level: str | None) -> No
         print(f"    {rule.id:<{width}}  {level}  {rule.title}")
     scored = sum(rule.is_scored for rule in rules)
     print(ui.paint(f"\n  {len(rules)} rules, {scored} scored (adopt). kiln grid <ID>", ui.STONE))
+    if hidden:
+        print(ui.paint(f"  {hidden} more, assessed or held: kiln grid --level assess", ui.STONE))
 
 
 def show_rule(rule_id: str) -> None:
@@ -46,7 +62,10 @@ def find_rule(rule_id: str) -> Rule:
     for rule in rules:
         if rule.id == wanted:
             return rule
-    close = [rule.id for rule in rules if wanted in rule.id or rule.id in wanted]
+    # Whole words first (`ACTIONS` → PINNED-ACTIONS, not TRANSACTIONS), then typos.
+    words = set(wanted.split("-"))
+    close = [rule.id for rule in rules if words & set(rule.id.split("-"))]
+    close = close or difflib.get_close_matches(wanted, [rule.id for rule in rules], n=3)
     hint = f" (did you mean {', '.join(close)}?)" if close else ": kiln grid lists them"
     raise KilnError(f"no rule {rule_id}{hint}")
 
