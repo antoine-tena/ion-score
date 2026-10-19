@@ -8,6 +8,7 @@ otherwise the 256-color palette.
 import os
 import shutil
 import sys
+import textwrap
 import threading
 import time
 from dataclasses import dataclass, field
@@ -262,13 +263,20 @@ def panel(title: str, lines: list[str]) -> None:
     print(f"  {bar} {paint(shown_title, FIRE, bold=True)}{' ' * (inner - len(shown_title))} {bar}")
     print(f"  {edge}├{'─' * (inner + 2)}┤{RESET}")
     for line in lines:
-        text = _fit(line, inner)
-        gap = " " * (inner - len(text))
-        if text.startswith("- "):
-            styled = f"{paint('·', FIRE)} {text[2:]}"
-        elif text[:1] == "v" and text[1:2].isdigit():
-            styled = paint(text, bold=True)
-        else:
-            styled = paint(text, STONE)
-        print(f"  {bar} {styled}{gap} {bar}")
+        # A long line wraps under its own text, never cut: release notes are read in full.
+        is_bullet = line.startswith("- ")
+        wrapped = textwrap.wrap(
+            line, inner, subsequent_indent="  " if is_bullet else "", break_on_hyphens=False
+        ) or [""]
+        for index, text in enumerate(wrapped):
+            gap = " " * (inner - len(text))
+            if is_bullet and index == 0:
+                styled = f"{paint('·', FIRE)} {text[2:]}"
+            elif is_bullet:
+                styled = text
+            elif text[:1] == "v" and text[1:2].isdigit():
+                styled = paint(text, bold=True)
+            else:
+                styled = paint(text, STONE)
+            print(f"  {bar} {styled}{gap} {bar}")
     print(f"  {edge}╰{'─' * (inner + 2)}╯{RESET}", flush=True)
