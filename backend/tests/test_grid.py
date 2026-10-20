@@ -92,8 +92,12 @@ CASES: dict[str, dict[str, dict[str, str]]] = {
             "tsconfig.json": '{"compilerOptions": {"strict": true}}',
             "frontend/tsconfig.json": '{"extends": "./.nuxt/tsconfig.json"}',
             "frontend/nuxt.config.ts": "export default defineNuxtConfig({})\n",
+            "site/tsconfig.json": '{"extends": "astro/tsconfigs/strictest"}',
         },
-        "fail": {"tsconfig.json": '{"compilerOptions": {"strict": false}}'},
+        "fail": {
+            "tsconfig.json": '{"compilerOptions": {"strict": false}}',
+            "site/tsconfig.json": '{"extends": "astro/tsconfigs/base"}',
+        },
     },
     "NO-ANY": {
         "pass": {"a.ts": "// works for any input\nconst x: unknown = 1\n"},
