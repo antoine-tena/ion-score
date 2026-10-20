@@ -87,6 +87,23 @@ def test_stacks_the_grid_does_not_cover_are_listed(tmp_path: Path) -> None:
     assert report.uncovered == ("PHP: not covered by the grid yet",)
 
 
+@pytest.mark.parametrize(
+    ("files", "uncovered"),
+    [
+        ({"App.sln": "", "App/App.csproj": "<Project/>", "App/Main.cs": ""}, ["C# (.NET)"]),
+        ({".classpath": "", "src/Main.java": "class Main {}"}, ["Java"]),
+        ({"pom.xml": "<project/>", "src/Main.java": "class Main {}"}, ["Java (Maven)"]),
+        ({"web/index.php": "<?php"}, ["PHP"]),
+    ],
+)
+def test_a_stack_known_by_its_sources_alone_is_listed(
+    tmp_path: Path, files: dict[str, str], uncovered: list[str]
+) -> None:
+    report = score.score_repo(make(tmp_path, {**GOOD, **files}))
+
+    assert report.uncovered == tuple(f"{stack}: not covered by the grid yet" for stack in uncovered)
+
+
 def test_json_badge_and_screen(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:

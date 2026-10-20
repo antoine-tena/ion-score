@@ -258,6 +258,17 @@ def test_requirements_pinned_to_exact_versions_are_their_own_lock(tmp_path: Path
     assert detectors.detect(rule.detector, loose).locations == ("api/requirements.txt",)
 
 
+@pytest.mark.parametrize(
+    "test_file",
+    ["Converter.Tests/ExtractTests.cs", "src/socialnetwork/BavardTest.java", "tests/BookTest.php"],
+)
+def test_tests_are_found_in_dotnet_java_and_php(tmp_path: Path, test_file: str) -> None:
+    rule = next(rule for rule in RULES if rule.id == "TESTS-PRESENT")
+    repo = make_repo(tmp_path, {test_file: "// a test\n"})
+
+    assert detectors.detect(rule.detector, repo).status == detectors.PASS
+
+
 def test_nothing_to_look_at_is_not_a_pass(tmp_path: Path) -> None:
     repo = make_repo(tmp_path, {"README.md": "# a\n"})
     rules = {rule.id: rule for rule in RULES}
