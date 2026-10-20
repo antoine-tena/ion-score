@@ -39,6 +39,22 @@ UNCOVERED = {
     "pubspec.yaml": "Dart",
     "Package.swift": "Swift",
 }
+# A stack known by its sources alone (no manifest: an Eclipse project, a PHP site, a .NET
+# solution), named once even when its manifest is also there.
+UNCOVERED_SOURCES = {
+    ".cs": "C# (.NET)",
+    ".csproj": "C# (.NET)",
+    ".sln": "C# (.NET)",
+    ".fs": "F# (.NET)",
+    ".java": "Java",
+    ".kt": "Kotlin",
+    ".php": "PHP",
+    ".go": "Go",
+    ".rs": "Rust",
+    ".rb": "Ruby",
+    ".swift": "Swift",
+    ".dart": "Dart",
+}
 ENDOFLIFE_API = "https://endoflife.date/api/{product}.json"
 
 
@@ -133,6 +149,13 @@ def _uncovered(repo: Repo) -> list[str]:
         for name in repo.files
         if PurePosixPath(name).name in UNCOVERED
     }
+    languages = {stack.split(" (")[0] for stack in found}
+    found |= {
+        stack
+        for name in repo.files
+        if (stack := UNCOVERED_SOURCES.get(PurePosixPath(name).suffix))
+        and stack.split(" (")[0] not in languages
+    }
     return sorted(f"{stack}: not covered by the grid yet" for stack in found)
 
 
@@ -181,6 +204,9 @@ def show(report: Report, *, every: bool = False) -> None:
     pillars = [f"{pillar} {value}" for pillar, value in report.pillars.items() if value is not None]
     print(ui.paint(f"  {'  ·  '.join(pillars)}", ui.STONE_LIGHT))
     print(ui.paint(f"  stacks: {', '.join(report.facts) or 'none found'}", ui.STONE))
+    if report.uncovered and not report.facts:
+        only = "  universal rules only: the grid does not know this repo's stack"
+        print(ui.paint(only, ui.STONE))
     counted = [found for found in report.findings if found.status in (PASSED, FAILED)]
     passed = sum(found.status == PASSED for found in counted)
     print(ui.paint(f"  {passed} of {len(counted)} rules met", ui.STONE))
