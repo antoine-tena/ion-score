@@ -82,14 +82,19 @@ def run_checks(root: Path, commands: list[list[str]]) -> bool:
 
 
 def plan(root: Path, only: str | None = None) -> list[Rule]:
-    """The failing scored rules a converter can close, waived ones aside."""
+    """The failing scored rules a converter can close, waived ones aside. A rule out of the
+    score (the compressor's, `trial`) runs only when `only` names it: its converter finds its
+    own gaps, and spends test runs to prove each one."""
     report = score.score_repo(root)
     failing = {found.rule for found in report.findings if found.status == score.FAILED}
     rules = [rule for rule in load_rules() if rule.id in failing and rule.fixer in FIXERS]
     if only is not None:
         wanted = only.upper()
-        if not any(rule.id == wanted for rule in load_rules()):
+        named = [rule for rule in load_rules() if rule.id == wanted]
+        if not named:
             raise KilnError(f"no rule {only}: kiln grid lists them")
+        if not named[0].is_scored and named[0].fixer in FIXERS:
+            return named
         rules = [rule for rule in rules if rule.id == wanted]
     return rules
 
