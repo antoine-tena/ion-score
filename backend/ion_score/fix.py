@@ -6,6 +6,7 @@ source. `--dry-run` shows the plan and the diff on a throwaway worktree, the rep
 """
 
 import datetime
+import os
 import shutil
 import subprocess
 import tempfile
@@ -72,7 +73,9 @@ def run_checks(root: Path, commands: list[list[str]]) -> bool:
     for command in commands:
         if shutil.which(command[0]) is None:
             return False
-        done = subprocess.run(command, cwd=root, capture_output=True, check=False)
+        # No bytecode written: `git add --all` would commit it in a repo that does not ignore it.
+        environment = {**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}
+        done = subprocess.run(command, cwd=root, env=environment, capture_output=True, check=False)
         if done.returncode != 0:
             return False
     return True
