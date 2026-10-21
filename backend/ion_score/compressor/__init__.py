@@ -110,7 +110,7 @@ def _settle(
     if projects:
         removal.sync_environment(root, projects)
     report.proofs += 1
-    broke = proof.holds(root, base)
+    broke = proof.holds(root, base, [item.path for item in applied])
     if not broke:
         _checkpoint(root)
         report.kept += applied

@@ -214,6 +214,19 @@ def test_a_known_failure_does_not_block_and_a_new_one_does(
     assert proof.holds(tmp_path, base) == "pytest: t::a missing"
 
 
+def test_a_removal_runs_only_the_steps_of_its_project(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    ran: list[str] = []
+    monkeypatch.setattr(proof, "_run", lambda root, command: ran.append(command[0]) or True)
+    steps = [
+        proof.Step("backend: mypy", proof.TYPES, ("mypy",), folder="backend"),
+        proof.Step("frontend: pnpm run test", proof.TESTS, ("pnpm",), folder="frontend"),
+    ]
+    assert proof.holds(tmp_path, proof.Baseline(steps=steps), ["backend/a.py"]) == ""
+    assert ran == ["mypy"]
+
+
 def test_no_test_that_passes_proves_nothing(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -249,7 +262,9 @@ def test_a_breaking_removal_is_found_by_halves_and_put_back(
     monkeypatch.setattr(removal, "sync_environment", lambda root, folders: None)
     monkeypatch.setattr(compressor, "_checkpoint", checkpoint)
     monkeypatch.setattr(compressor, "_undo", undo)
-    monkeypatch.setattr(proof, "holds", lambda root, base: "t::a failed" if "p5" in tree else "")
+    monkeypatch.setattr(
+        proof, "holds", lambda root, base, touched: "t::a failed" if "p5" in tree else ""
+    )
     batch = [Candidate(DEPENDENCY, "pyproject.toml", f"p{index}", "deptry") for index in range(8)]
     report = compressor.Report()
     kept = compressor._settle(tmp_path, batch, proof.Baseline(steps=[]), report)

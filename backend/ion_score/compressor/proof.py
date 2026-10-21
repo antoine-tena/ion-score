@@ -137,9 +137,13 @@ def baseline(root: Path, wanted: list[Step]) -> Baseline:
     return result
 
 
-def holds(root: Path, base: Baseline) -> str:
-    """ "" when the tree still passes every step of the baseline, else what broke."""
+def holds(root: Path, base: Baseline, touched: list[str] | None = None) -> str:
+    """ "" when the tree still passes the steps of the baseline, else what broke. With
+    `touched`, only the steps of the projects holding those paths run: a removal in the
+    backend cannot break the frontend's tests."""
     for step in base.steps:
+        if touched is not None and not any(_inside(path, step.folder) for path in touched):
+            continue
         if step.per_test:
             outcomes = _pytest(root, step)
             if outcomes is None:
@@ -186,6 +190,10 @@ def _pytest(root: Path, step: Step, data: Path | None = None) -> dict[str, str] 
 def _test_id(folder: str, test: str) -> str:
     """A test named from the root: two projects may each have a `tests.test_api::test_a`."""
     return f"{folder}/{test}" if folder else test
+
+
+def _inside(path: str, folder: str) -> bool:
+    return not folder or path.startswith(f"{folder}/")
 
 
 def _belongs(test: str, folder: str) -> bool:
