@@ -167,6 +167,15 @@ def test_a_dirty_tree_is_refused(tmp_path: Path) -> None:
         fix.fix(root)
 
 
+def test_a_dry_run_leaves_a_dirty_tree_alone(tmp_path: Path) -> None:
+    root = make(tmp_path, CONVERTED["TS-EXPECT-ERROR"])
+    (root / "notes.md").write_text("draft\n")
+
+    fix.fix(root, dry_run=True, only="TS-EXPECT-ERROR")
+
+    assert git(root, "status", "--porcelain").strip() == "?? notes.md"
+
+
 def test_files_the_repo_ignores_are_still_committed(tmp_path: Path) -> None:
     root = make(tmp_path, {".gitignore": ".*\n", "uv.lock": ""})
     git(root, "add", "--force", ".gitignore")
