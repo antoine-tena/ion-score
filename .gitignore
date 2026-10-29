@@ -1,0 +1,39 @@
+# --- Secrets: only the example without real values is tracked ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+
+# --- Claude Code: personal settings (.claude/settings.json stays shared) ---
+.claude/settings.local.json
+.claude/worktrees/
+# Link to the installed kiln plugin, made by kiln 0.3's session hook.
+.claude/kiln
+# Serena's index (plugin serena@kiln), specific to each worktree.
+.serena/
+CLAUDE.local.md
+
+# --- Logs ---
+*.log
+logs/
+
+# --- Editors ---
+.idea/
+*.swp
+
+# --- System ---
+.DS_Store
+Thumbs.db
+*:Zone.Identifier
+# --- Python (backend) ---
+__pycache__/
+*.py[cod]
+.venv/
+coverage.xml
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
