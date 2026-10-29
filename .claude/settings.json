@@ -15,10 +15,19 @@
         "ref": "main"
       },
       "autoUpdate": true
+    },
+    "cone": {
+      "source": {
+        "source": "github",
+        "repo": "antoine-tena/cone",
+        "ref": "main"
+      },
+      "autoUpdate": true
     }
   },
   "enabledPlugins": {
-    "kiln@kiln": true
+    "kiln@kiln": true,
+    "cone@cone": true
   },
   "permissions": {
     "deny": [

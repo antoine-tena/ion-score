@@ -3,7 +3,7 @@ _commit: v0.4.9-232-gd567bf6
 _src_path: https://github.com/antoine-tena/kiln.git
 backend: cli
 ci_runner: local
-claude_plugin: false
+claude_plugin: true
 compact_window: 400000
 created: '2026-10-29'
 description: 'Le moteur de règles de la famille Keramos : les règles sourcées et la
