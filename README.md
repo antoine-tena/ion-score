@@ -17,7 +17,6 @@ Puis lancer l'outil : `cd backend && uv run cone --help`, ou l'installer sur le 
 ## Équipe
 
 - [@antoine-tena](https://github.com/antoine-tena)
-- [@amnkd555](https://github.com/amnkd555)
 
 ## Organisation
 
