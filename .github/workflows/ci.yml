@@ -17,19 +17,19 @@ permissions:
 
 jobs:
   backend:
-    uses: antoine-tena/kiln/.github/workflows/python.yml@develop
+    uses: antoine-tena/kiln/.github/workflows/python.yml@b782bbd0555f09bc0291db6cacdb03cbbd28fc1c # develop
     with:
       directory: backend
 
   charter:
-    uses: antoine-tena/kiln/.github/workflows/charter.yml@develop
+    uses: antoine-tena/kiln/.github/workflows/charter.yml@b782bbd0555f09bc0291db6cacdb03cbbd28fc1c # develop
 
   # [SECRETS]: gitleaks searches the whole history, with no organisation licence.
   secrets-scan:
-    uses: antoine-tena/kiln/.github/workflows/secrets.yml@develop
+    uses: antoine-tena/kiln/.github/workflows/secrets.yml@b782bbd0555f09bc0291db6cacdb03cbbd28fc1c # develop
 
   security:
-    uses: antoine-tena/kiln/.github/workflows/security.yml@develop
+    uses: antoine-tena/kiln/.github/workflows/security.yml@b782bbd0555f09bc0291db6cacdb03cbbd28fc1c # develop
     with:
       uv: "backend"
       pnpm: ""
