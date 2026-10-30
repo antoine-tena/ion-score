@@ -12,12 +12,14 @@ from typing import TextIO
 from cone.greeting import build_greeting
 
 PROGRAM = "cone"
+# The installed package the version is read from.
+DISTRIBUTION = "cone"
 EXIT_OK = 0
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog=PROGRAM, description=__doc__)
-    parser.add_argument("--version", action="version", version=f"%(prog)s {version(PROGRAM)}")
+    parser.add_argument("--version", action="version", version=f"%(prog)s {version(DISTRIBUTION)}")
     parser.add_argument("name", nargs="?", default="", help="à qui dire bonjour")
     return parser
 
