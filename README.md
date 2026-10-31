@@ -1,6 +1,6 @@
-# cone
+# score
 
-Le moteur de règles de la famille Keramos : les règles sourcées et la note.
+Le moteur de règles de la famille Ion : les règles sourcées et la note.
 
 ## Démarrage rapide
 
@@ -11,7 +11,7 @@ uv tool install kiln-cli   # une fois par poste
 kiln install
 ```
 
-Puis lancer l'outil : `cd backend && uv run cone --help`, ou l'installer sur le poste par
+Puis lancer l'outil : `cd backend && uv run ion-score --help`, ou l'installer sur le poste par
 `uv tool install --editable backend`.
 
 ## Équipe
@@ -20,11 +20,11 @@ Puis lancer l'outil : `cd backend && uv run cone --help`, ou l'installer sur le 
 
 ## Organisation
 
-- `backend/` : l'outil en ligne de commande `cone`.
+- `backend/` : l'outil en ligne de commande `ion-score`.
 - [`CLAUDE.md`](CLAUDE.md) et [`.claude/rules/kiln/`](.claude/rules/kiln/) : la charte du code
   et la façon de travailler, pour les humains comme pour les agents.
 - `.vscode/` : réglages et extensions recommandées, partagés par toute l'équipe.
-- `plugins/cone/` et `.claude-plugin/marketplace.json` : le plugin Claude Code de la
+- `plugins/ion-score/` et `.claude-plugin/marketplace.json` : le plugin Claude Code de la
   commande, et le catalogue qui le publie.
 
 Le projet est généré et tenu à jour par [kiln](https://github.com/antoine-tena/kiln). Changer un
@@ -40,7 +40,7 @@ risque.
 ## Lancer le projet
 
 ```sh
-cd backend && uv run cone --help
+cd backend && uv run ion-score --help
 uv tool install --editable backend   # depuis la racine : la commande sur tout le poste
 ```
 

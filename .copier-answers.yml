@@ -1,17 +1,16 @@
 # kiln's answers for this project: never edit by hand, `kiln set` changes them.
-_commit: v0.4.10-17-g9476eb7
+_commit: v0.4.10-27-g9df528c
 _src_path: https://github.com/antoine-tena/kiln.git
 backend: cli
 ci_runner: local
 claude_plugin: true
 compact_window: 400000
 created: '2026-10-29'
-description: 'Le moteur de règles de la famille Keramos : les règles sourcées et la
-    note.'
+description: 'Le moteur de règles de la famille Ion : les règles sourcées et la note.'
 frontend: none
 language: fr
 language_custom: false
-name: cone
+name: ion-score
 north_star: Chaque règle sourcée et notée
 owner: antoine-tena
 podman: false
@@ -24,4 +23,4 @@ statusline_ci: true
 team:
 - antoine-tena
 timezone: Europe/Paris
-title: cone
+title: score
