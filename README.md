@@ -1,6 +1,6 @@
 # score
 
-Le moteur de règles de la famille Keramos : les règles sourcées et la note.
+Le moteur de règles de la famille Ion : les règles sourcées et la note.
 
 ## Démarrage rapide
 

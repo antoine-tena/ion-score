@@ -2,7 +2,7 @@
 Project rules go in CLAUDE.md or in .claude/rules/ outside kiln/. -->
 # score: working here
 
-Le moteur de règles de la famille Keramos : les règles sourcées et la note.
+Le moteur de règles de la famille Ion : les règles sourcées et la note.
 
 Size: **Small**, a small app or site, one or two people, low stakes (`kiln set size=…` changes it).
 Backend a Python command-line tool in `backend/`.

@@ -1,7 +1,7 @@
 [project]
 name = "ion-score"
 version = "0.1.0"
-description = "Le moteur de r\u00e8gles de la famille Keramos : les r\u00e8gles sourc\u00e9es et la note."
+description = "Le moteur de r\u00e8gles de la famille Ion : les r\u00e8gles sourc\u00e9es et la note."
 requires-python = ">=3.14"
 dependencies = []
 

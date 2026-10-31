@@ -6,8 +6,7 @@ ci_runner: local
 claude_plugin: true
 compact_window: 400000
 created: '2026-10-29'
-description: 'Le moteur de règles de la famille Keramos : les règles sourcées et la
-    note.'
+description: 'Le moteur de règles de la famille Ion : les règles sourcées et la note.'
 frontend: none
 language: fr
 language_custom: false

@@ -1,6 +1,6 @@
 ---
 name: run
-description: Run the `ion-score` command for the user (Le moteur de règles de la famille Keramos : les règles sourcées et la note). Use when the user asks for what ion-score does, or names it.
+description: Run the `ion-score` command for the user (Le moteur de règles de la famille Ion : les règles sourcées et la note). Use when the user asks for what ion-score does, or names it.
 argument-hint: "[arguments of ion-score]"
 ---
 

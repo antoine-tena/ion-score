@@ -14,28 +14,28 @@ North star: **Chaque règle sourcée et notée**.
 
 ## 🟠 Important
 
-### T-01 · Reprendre de kiln la grille : règles, modèle, détecteurs, note
+### T-01 · Reprendre de ion-repo la grille : règles, modèle, détecteurs, note
 - **Type**: task
-- **Status**: blocked — waiting for kiln T-394 (comment un outil arrive dans un repo) ; à faire après la bascule de slake
+- **Status**: blocked — waiting for ion-repo T-394 (comment un outil arrive dans un repo) ; à faire après la bascule de ion-render
 - **Opened**: 2026-10-30
 - **Effort**: L · **Owner**: — · **Due**: —
-- **Origin**: décision d'antoine du 2026-10-30, répartir ce que kiln porte hors de son métier ;
-  la carte de la famille dit déjà « cone : règles sourcées et note, aujourd'hui la grille de kiln »
+- **Origin**: décision d'antoine du 2026-10-30, répartir ce que ion-repo porte hors de son métier ;
+  la carte de la famille dit déjà « ion-score : règles sourcées et note, aujourd'hui la grille de ion-repo »
 
-La grille vit dans `src/kiln/grid/` de kiln (143 règles dans `rules/<thème>/<ID>.toml`).
-Partage retenu : cone prend ce qui **juge** ; kiln garde ce qui **modifie un repo**.
+La grille vit dans `src/kiln/grid/` de ion-repo (143 règles dans `rules/<thème>/<ID>.toml`).
+Partage retenu : ion-score prend ce qui **juge** ; ion-repo garde ce qui **modifie un repo**.
 
-- [ ] Viennent dans cone : `rules/`, `model.py`, `facts.py`, `detectors.py`, `forge.py`,
+- [ ] Viennent dans ion-score : `rules/`, `model.py`, `facts.py`, `detectors.py`, `forge.py`,
   `score.py`, `show.py`, avec leurs tests et l'exemple réussi et raté de chaque règle.
-- [ ] Restent dans kiln, appelant cone : `kiln score`, `kiln grid`, `fixers/`, `fix.py`,
+- [ ] Restent dans ion-repo, appelant ion-score : `ion repo score`, `ion repo grid`, `fixers/`, `fix.py`,
   `checks.py`, `roadmap.py`. À trancher en le faisant : `gap_report.py`, `compressor/`.
-- [ ] Le lien `charter_rule` des règles vers le moteur `charter` de kiln : garder une seule
+- [ ] Le lien `charter_rule` des règles vers le moteur `charter` de ion-repo : garder une seule
   source pour les ID.
-- [ ] Le contrat entre cone et kiln écrit (`docs/contract.md`, comme slake), versionné.
-- [ ] cone sur PyPI (`keramos-cone`) et public avant que kiln en dépende : kiln est public.
+- [ ] Le contrat entre ion-score et ion-repo écrit (`docs/contract.md`, comme ion-render), versionné.
+- [ ] ion-score sur PyPI (`keramos-cone`) et public avant que ion-repo en dépende : ion-repo est public.
 - [ ] Mesuré : même note, règle par règle, avant et après, sur les repos d'entraînement.
 
-Côté kiln : T-393.
+Côté ion-repo : T-393.
 
 ## 🟡 Normal
 
