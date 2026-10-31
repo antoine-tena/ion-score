@@ -13,11 +13,11 @@ from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from kiln import ui
-from kiln.grid.compressor import candidates, proof, removal
-from kiln.grid.compressor.candidates import CODE, DEPENDENCY, Candidate, Skipped
-from kiln.grid.facts import Repo, read_repo
-from kiln.shell import KilnError
+from ion_repo import ui
+from ion_repo.grid.compressor import candidates, proof, removal
+from ion_repo.grid.compressor.candidates import CODE, DEPENDENCY, Candidate, Skipped
+from ion_repo.grid.facts import Repo, read_repo
+from ion_repo.shell import KilnError
 
 CODE_PHASE, DEPENDENCY_PHASE = "code", "dependencies"
 MAX_ROUNDS = 5

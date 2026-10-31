@@ -1,7 +1,7 @@
-"""Converters of `kiln fix`: the slimming pillar (T-139), the compressor's two phases."""
+"""Converters of `ion repo fix`: the slimming pillar (T-139), the compressor's two phases."""
 
-from kiln.grid.compressor import remove_dead_code, remove_unused_dependencies
-from kiln.grid.fixers import Fixer, register
+from ion_repo.grid.compressor import remove_dead_code, remove_unused_dependencies
+from ion_repo.grid.fixers import Fixer, register
 
 register(
     Fixer(

@@ -1,4 +1,4 @@
-"""Converters of `kiln fix`: Python (T-128)."""
+"""Converters of `ion repo fix`: Python (T-128)."""
 
 import re
 import shutil
@@ -6,9 +6,9 @@ import subprocess
 import tomllib
 from pathlib import Path, PurePosixPath
 
-from kiln.grid.facts import Repo
-from kiln.grid.fixers import Fixer, register
-from kiln.shell import KilnError
+from ion_repo.grid.facts import Repo
+from ion_repo.grid.fixers import Fixer, register
+from ion_repo.shell import KilnError
 
 BACKPORT = re.compile(
     r"(?i)^\s*[\"']?(typing|enum34|futures|pathlib|dataclasses)\s*([<>=~!;\"',]|$)"

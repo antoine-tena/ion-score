@@ -8,7 +8,7 @@ import subprocess
 import urllib.error
 import urllib.request
 
-from kiln.shell import KilnError
+from ion_repo.shell import KilnError
 
 TIMEOUT = 15
 SEMVER = re.compile(r"^v?(\d+)(?:\.(\d+))?(?:\.(\d+))?$")

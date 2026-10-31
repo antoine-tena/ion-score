@@ -25,8 +25,8 @@ from typing import Any
 
 import yaml  # brought by copier
 
-from kiln.grid import forge
-from kiln.grid.facts import Repo
+from ion_repo.grid import forge
+from ion_repo.grid.facts import Repo
 
 PASS, FAIL, NOT_APPLICABLE = "pass", "fail", "n/a"
 KINDS = ("file", "regex", "toml", "json", "yaml", "python")

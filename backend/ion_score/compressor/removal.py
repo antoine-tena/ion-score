@@ -12,7 +12,7 @@ import shutil
 import subprocess
 from pathlib import Path, PurePosixPath
 
-from kiln.grid.compressor.candidates import CODE, DEPENDENCY, FILE, Candidate, find
+from ion_repo.grid.compressor.candidates import CODE, DEPENDENCY, FILE, Candidate, find
 
 PYTHON_REQUIREMENT = r"(?im)^\s*[\"']?{name}\s*([<>=~!;\[\"',@\s]|$).*\n?"
 

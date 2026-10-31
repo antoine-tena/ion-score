@@ -1,4 +1,4 @@
-"""Converters of `kiln fix`: supply chain and CI (T-127).
+"""Converters of `ion repo fix`: supply chain and CI (T-127).
 
 Each edits text in place, line by line, so that comments and layout stay as the repo wrote
 them; YAML is only parsed to read, never dumped back."""
@@ -9,10 +9,10 @@ from pathlib import PurePosixPath
 
 import yaml  # brought by copier
 
-from kiln.grid.detectors import CONTAINER_FILES, WORKFLOWS
-from kiln.grid.facts import Repo
-from kiln.grid.fixers import Fixer, register, resolve
-from kiln.stack import PNPM_LENIENT_BUILDS
+from ion_repo.grid.detectors import CONTAINER_FILES, WORKFLOWS
+from ion_repo.grid.facts import Repo
+from ion_repo.grid.fixers import Fixer, register, resolve
+from ion_repo.stack import PNPM_LENIENT_BUILDS
 
 COOLDOWN_DAYS = 7
 DEPENDABOT = ".github/dependabot.yml"
