@@ -26,12 +26,12 @@ from pathlib import Path
 
 import yaml  # brought by copier
 
-from kiln import ui
-from kiln.grid import checks, detectors, score
-from kiln.grid.facts import read_repo
-from kiln.grid.fixers import FIXERS
-from kiln.grid.model import Rule, load_rules
-from kiln.shell import KilnError
+from ion_repo import ui
+from ion_repo.grid import checks, detectors, score
+from ion_repo.grid.facts import read_repo
+from ion_repo.grid.fixers import FIXERS
+from ion_repo.grid.model import Rule, load_rules
+from ion_repo.shell import KilnError
 
 UNVERIFIED = "unverified: no check found"
 CLOSED = "closed by an earlier converter"

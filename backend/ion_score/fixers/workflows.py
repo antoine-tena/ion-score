@@ -10,18 +10,18 @@ from collections.abc import Callable
 
 import yaml  # brought by copier
 
-from kiln.grid import checks
-from kiln.grid.detectors import (
+from ion_repo.grid import checks
+from ion_repo.grid.detectors import (
     EXPRESSION,
     WORKFLOWS,
     untrusted_expressions,
     workflow_scripts,
 )
-from kiln.grid.facts import Repo
-from kiln.grid.fixers import Fixer, register
-from kiln.grid.fixers.ci import _write, write_workflow
-from kiln.shell import capture, run
-from kiln.stack import PNPM_LENIENT_BUILDS
+from ion_repo.grid.facts import Repo
+from ion_repo.grid.fixers import Fixer, register
+from ion_repo.grid.fixers.ci import _write, write_workflow
+from ion_repo.shell import capture, run
+from ion_repo.stack import PNPM_LENIENT_BUILDS
 
 # A bare context read (`github.event.issue.title`): moved to `env:` as it is. Anything more (a
 # function, `||`) is left to judgment.

@@ -2,9 +2,9 @@
 
 import difflib
 
-from kiln import ui
-from kiln.grid.model import THEMES, Rule, load_rules
-from kiln.shell import KilnError
+from ion_repo import ui
+from ion_repo.grid.model import THEMES, Rule, load_rules
+from ion_repo.shell import KilnError
 
 LEVEL_COLORS = {"adopt": ui.MOSS, "trial": ui.FIRE, "assess": ui.STONE, "hold": ui.EMBER}
 

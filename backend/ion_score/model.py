@@ -83,7 +83,7 @@ class Rule:
     profiles: tuple[str, ...]
     why: str
     sources: tuple[Source, ...]
-    applies: tuple[str, ...]  # facts the repo must have (`kiln.grid.facts`); empty: always
+    applies: tuple[str, ...]  # facts the repo must have (`ion_repo.grid.facts`); empty: always
     detector: Mapping[str, object]
     fixer: str  # name of a converter of `kiln fix`; "" when only judgment fixes it
     since: str

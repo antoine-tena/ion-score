@@ -17,9 +17,9 @@ import urllib.parse
 from collections.abc import Callable
 from pathlib import Path
 
-from kiln import ui
-from kiln.grid.score import Report
-from kiln.versions import installed_version
+from ion_repo import ui
+from ion_repo.grid.score import Report
+from ion_repo.versions import installed_version
 
 KILN_REPO = "antoine-tena/kiln"
 CONSENT_KEY = "kiln.report-gaps"

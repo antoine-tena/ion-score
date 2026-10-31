@@ -19,12 +19,12 @@ from pathlib import Path
 
 import yaml  # brought by copier
 
-from kiln import shell, ui
-from kiln.grid import detectors
-from kiln.grid.detectors import COMPOSE_FILES, CONTAINER_FILES
-from kiln.grid.facts import Repo
-from kiln.grid.fixers import Fixer, register, resolve
-from kiln.shell import KilnError
+from ion_repo import shell, ui
+from ion_repo.grid import detectors
+from ion_repo.grid.detectors import COMPOSE_FILES, CONTAINER_FILES
+from ion_repo.grid.facts import Repo
+from ion_repo.grid.fixers import Fixer, register, resolve
+from ion_repo.shell import KilnError
 
 FROM = re.compile(r"^(?P<head>\s*FROM\s+(?:--\S+\s+)*)(?P<image>\S+)(?P<tail>.*)$", re.I)
 OLD_DEBIAN = re.compile(r"\b(bookworm|bullseye|buster|stretch)\b")

@@ -12,10 +12,10 @@ import datetime
 import re
 from pathlib import Path
 
-from kiln import ui
-from kiln.grid import checks
-from kiln.grid.score import Finding, Report
-from kiln.shell import KilnError
+from ion_repo import ui
+from ion_repo.grid import checks
+from ion_repo.grid.score import Finding, Report
+from ion_repo.shell import KilnError
 
 BACKLOG = Path("docs") / "backlog" / "backlog.md"
 NEXT_FREE = re.compile(r"Next free: T-(\d+)")

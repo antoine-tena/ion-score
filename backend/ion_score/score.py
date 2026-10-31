@@ -16,12 +16,12 @@ from dataclasses import asdict, dataclass, field
 from fnmatch import fnmatchcase
 from pathlib import Path, PurePosixPath
 
-from kiln import ui
-from kiln.charter.waivers import Waivers
-from kiln.charter.waivers import load as load_waivers
-from kiln.grid import checks, detectors, forge
-from kiln.grid.facts import Repo, read_repo
-from kiln.grid.model import PILLARS, Rule, load_rules
+from ion_repo import ui
+from ion_repo.charter.waivers import Waivers
+from ion_repo.charter.waivers import load as load_waivers
+from ion_repo.grid import checks, detectors, forge
+from ion_repo.grid.facts import Repo, read_repo
+from ion_repo.grid.model import PILLARS, Rule, load_rules
 
 # The version of the `--json` output; it only goes up when a field changes meaning or leaves.
 SCHEMA = 1

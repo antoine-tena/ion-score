@@ -18,7 +18,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from kiln.renames import rule_id
+from ion_repo.renames import rule_id
 
 WAIVERS_FILE = "kiln-waivers.toml"
 RULE_ID = "WAIVERS"
