@@ -1,6 +1,6 @@
-# Le plugin Claude Code `ion-score`
+# Le plugin Claude Code `score`
 
-Ce que Claude Code sait faire avec la commande `ion-score` : `/ion-score:…`.
+Ce que Claude Code sait faire avec la commande `ion-score` : `/score:…`.
 
 - `.claude-plugin/plugin.json` : son nom et sa description, sans `version` exprès (Claude Code
   suit alors les commits) ; le catalogue qui le publie est `.claude-plugin/marketplace.json`, à
@@ -11,4 +11,4 @@ Ce que Claude Code sait faire avec la commande `ion-score` : `/ion-score:…`.
 
 Les sessions ouvertes dans ce dépôt l'activent (`.claude/settings.json`, à l'état de `main`).
 Ailleurs : `claude plugin marketplace add antoine-tena/ion-score`, puis
-`claude plugin install ion-score@ion-score`.
+`claude plugin install score@ion-score`.

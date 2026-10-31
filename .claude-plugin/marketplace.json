@@ -6,8 +6,8 @@
   },
   "plugins": [
     {
-      "name": "ion-score",
-      "source": "./plugins/ion-score",
+      "name": "score",
+      "source": "./plugins/score",
       "description": "Le moteur de r\u00e8gles de la famille Ion : les r\u00e8gles sourc\u00e9es et la note."
     }
   ]
