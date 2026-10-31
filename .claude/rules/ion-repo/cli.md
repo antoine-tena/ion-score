@@ -2,12 +2,12 @@
 paths:
   - "backend/**"
 ---
-<!-- Written by kiln and kept current by `kiln update`: do not edit, it would be overwritten. -->
+<!-- Written by ion-repo and kept current by `ion repo update`: do not edit, it would be overwritten. -->
 # Backend: Python command-line tool
 
 `backend/ion_score/`: commands (`cli.py`, entry point `__main__.py`) and business logic.
 Run: `cd backend && uv run ion-score --help`; install on the machine: `uv tool install --editable
-backend` (from the root); check: `kiln check`.
+backend` (from the root); check: `ion repo check`.
 
 ## Architecture
 
