@@ -1,6 +1,6 @@
-# Le plugin Claude Code `cone`
+# Le plugin Claude Code `ion-score`
 
-Ce que Claude Code sait faire avec la commande `cone` : `/cone:…`.
+Ce que Claude Code sait faire avec la commande `ion-score` : `/ion-score:…`.
 
 - `.claude-plugin/plugin.json` : son nom et sa description, sans `version` exprès (Claude Code
   suit alors les commits) ; le catalogue qui le publie est `.claude-plugin/marketplace.json`, à
@@ -10,5 +10,5 @@ Ce que Claude Code sait faire avec la commande `cone` : `/cone:…`.
 - Des hooks s'ajoutent dans `hooks/hooks.json`, des serveurs MCP dans `.mcp.json`.
 
 Les sessions ouvertes dans ce dépôt l'activent (`.claude/settings.json`, à l'état de `main`).
-Ailleurs : `claude plugin marketplace add antoine-tena/cone`, puis
-`claude plugin install cone@cone`.
+Ailleurs : `claude plugin marketplace add antoine-tena/ion-score`, puis
+`claude plugin install ion-score@ion-score`.

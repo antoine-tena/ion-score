@@ -1,13 +1,13 @@
 {
-  "name": "cone",
-  "description": "Claude Code plugin of cone",
+  "name": "ion-score",
+  "description": "Claude Code plugin of ion-score",
   "owner": {
     "name": "antoine-tena"
   },
   "plugins": [
     {
-      "name": "cone",
-      "source": "./plugins/cone",
+      "name": "ion-score",
+      "source": "./plugins/ion-score",
       "description": "Le moteur de r\u00e8gles de la famille Keramos : les r\u00e8gles sourc\u00e9es et la note."
     }
   ]

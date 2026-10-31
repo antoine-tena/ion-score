@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "env": {
-    "KILN_PROJECT": "cone",
+    "KILN_PROJECT": "ion-score",
     "KILN_BACKEND_DIR": "backend",
     "KILN_FRONTEND_DIR": "",
     "KILN_TEST_ENV": ""
@@ -17,10 +17,10 @@
       },
       "autoUpdate": true
     },
-    "cone": {
+    "ion-score": {
       "source": {
         "source": "github",
-        "repo": "antoine-tena/cone",
+        "repo": "antoine-tena/ion-score",
         "ref": "main"
       },
       "autoUpdate": true
@@ -28,7 +28,7 @@
   },
   "enabledPlugins": {
     "kiln@kiln": true,
-    "cone@cone": true
+    "ion-score@ion-score": true
   },
   "permissions": {
     "deny": [

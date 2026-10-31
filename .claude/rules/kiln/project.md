@@ -1,6 +1,6 @@
 <!-- Written by kiln and kept current by `kiln update`: do not edit, it would be overwritten.
 Project rules go in CLAUDE.md or in .claude/rules/ outside kiln/. -->
-# cone: working here
+# score: working here
 
 Le moteur de règles de la famille Keramos : les règles sourcées et la note.
 
@@ -9,7 +9,7 @@ Backend a Python command-line tool in `backend/`.
 The repo is generated and kept current by [kiln](https://github.com/antoine-tena/kiln).
 
 ## Commands
-- `cd backend && uv run cone --help`: run the tool; `uv tool install --editable backend`
+- `cd backend && uv run ion-score --help`: run the tool; `uv tool install --editable backend`
   installs it on the machine.
 - `kiln check`: every check of the stack (ruff, mypy, pytest), then `charter`.
   Run it before saying a change is done.

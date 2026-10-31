@@ -1,6 +1,6 @@
 # Backlog
 
-What is left to do on cone, what is done, and what was turned down. **This folder is the
+What is left to do on score, what is done, and what was turned down. **This folder is the
 only up-to-date source.**
 
 | File | Content |

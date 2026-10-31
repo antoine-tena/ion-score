@@ -9,11 +9,11 @@ from collections.abc import Sequence
 from importlib.metadata import version
 from typing import TextIO
 
-from cone.greeting import build_greeting
+from ion_score.greeting import build_greeting
 
-PROGRAM = "cone"
+PROGRAM = "ion-score"
 # The installed package the version is read from.
-DISTRIBUTION = "cone"
+DISTRIBUTION = "ion-score"
 EXIT_OK = 0
 
 
