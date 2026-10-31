@@ -32,7 +32,7 @@ Partage retenu : ion-score prend ce qui **juge** ; ion-repo garde ce qui **modif
 - [ ] Le lien `charter_rule` des règles vers le moteur `charter` de ion-repo : garder une seule
   source pour les ID.
 - [ ] Le contrat entre ion-score et ion-repo écrit (`docs/contract.md`, comme ion-render), versionné.
-- [ ] ion-score sur PyPI (`keramos-cone`) et public avant que ion-repo en dépende : ion-repo est public.
+- [ ] ion-score sur PyPI (`ion-score`) et public avant que ion-repo en dépende : ion-repo est public.
 - [ ] Mesuré : même note, règle par règle, avant et après, sur les repos d'entraînement.
 
 Côté ion-repo : T-393.
