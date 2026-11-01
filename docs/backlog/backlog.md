@@ -6,17 +6,27 @@ Everything left to do on score, in a single list ordered by priority. Started on
 
 North star: **Chaque règle sourcée et notée**.
 
-**Next free: T-02.**
+**Next free: ion-score#T-03.**
 
 ---
 
 ## 🔴 Critical
 
+### ion-score#T-02 · Finish the ion-repo update to v0.4.11
+- **Type**: task
+- **Status**: todo
+- **Opened**: 2026-11-01
+- **Effort**: XS · **Owner**: — · **Due**: —
+- **Origin**: release notes of the ion-repo releases crossed (`ion repo update`)
+
+What ion-repo cannot guess, to fill in right after the update (`/repo:update`):
+- [ ] run `ion repo install --machine` once on each machine, so that its Claude Code catalogue moves from kiln to ion-repo. (v0.4.11)
+
 ## 🟠 Important
 
-### T-01 · Reprendre de ion-repo la grille : règles, modèle, détecteurs, note
+### ion-score#T-01 · Reprendre de ion-repo la grille : règles, modèle, détecteurs, note
 - **Type**: task
-- **Status**: blocked — waiting for ion-repo T-394 (comment un outil arrive dans un repo) ; à faire après la bascule de ion-render
+- **Status**: blocked — waiting for ion-repo#T-394 (comment un outil arrive dans un repo) ; à faire après la bascule de ion-render
 - **Opened**: 2026-10-30
 - **Effort**: L · **Owner**: — · **Due**: —
 - **Origin**: décision d'antoine du 2026-10-30, répartir ce que ion-repo porte hors de son métier ;
@@ -35,7 +45,7 @@ Partage retenu : ion-score prend ce qui **juge** ; ion-repo garde ce qui **modif
 - [ ] ion-score sur PyPI (`ion-score`) et public avant que ion-repo en dépende : ion-repo est public.
 - [ ] Mesuré : même note, règle par règle, avant et après, sur les repos d'entraînement.
 
-Côté ion-repo : T-393.
+Côté ion-repo : ion-repo#T-393.
 
 ## 🟡 Normal
 

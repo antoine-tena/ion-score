@@ -7,12 +7,9 @@ Le moteur de règles de la famille Ion : les règles sourcées et la note.
 Après le clone, depuis la racine du dépôt (prérequis : [uv](https://docs.astral.sh/uv/)) :
 
 ```sh
-uv tool install kiln-cli   # une fois par poste ; ion-repo sur PyPI à sa prochaine release
-kiln install
+uv tool install ion-sh && ion add repo   # une fois par poste
+ion repo install
 ```
-
-Ce dépôt écrit ensuite `ion repo …`, qui demande la commande `ion` (paquet `ion-sh`, pas encore sur
-PyPI) ; sans elle, `kiln …` fait la même chose.
 
 Puis lancer l'outil : `cd backend && uv run ion-score --help`, ou l'installer sur le poste par
 `uv tool install --editable backend`.
