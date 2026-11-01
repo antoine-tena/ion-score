@@ -24,9 +24,9 @@ What ion-repo cannot guess, to fill in right after the update (`/repo:update`):
 
 ## 🟠 Important
 
-### T-01 · Reprendre de ion-repo la grille : règles, modèle, détecteurs, note
+### ion-score#T-01 · Reprendre de ion-repo la grille : règles, modèle, détecteurs, note
 - **Type**: task
-- **Status**: blocked — waiting for ion-repo T-394 (comment un outil arrive dans un repo) ; à faire après la bascule de ion-render
+- **Status**: blocked — waiting for ion-repo#T-394 (comment un outil arrive dans un repo) ; à faire après la bascule de ion-render
 - **Opened**: 2026-10-30
 - **Effort**: L · **Owner**: — · **Due**: —
 - **Origin**: décision d'antoine du 2026-10-30, répartir ce que ion-repo porte hors de son métier ;
@@ -45,7 +45,7 @@ Partage retenu : ion-score prend ce qui **juge** ; ion-repo garde ce qui **modif
 - [ ] ion-score sur PyPI (`ion-score`) et public avant que ion-repo en dépende : ion-repo est public.
 - [ ] Mesuré : même note, règle par règle, avant et après, sur les repos d'entraînement.
 
-Côté ion-repo : T-393.
+Côté ion-repo : ion-repo#T-393.
 
 ## 🟡 Normal
 
