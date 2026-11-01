@@ -6,11 +6,21 @@ Everything left to do on score, in a single list ordered by priority. Started on
 
 North star: **Chaque règle sourcée et notée**.
 
-**Next free: T-02.**
+**Next free: ion-score#T-03.**
 
 ---
 
 ## 🔴 Critical
+
+### ion-score#T-02 · Finish the ion-repo update to v0.4.11
+- **Type**: task
+- **Status**: todo
+- **Opened**: 2026-11-01
+- **Effort**: XS · **Owner**: — · **Due**: —
+- **Origin**: release notes of the ion-repo releases crossed (`ion repo update`)
+
+What ion-repo cannot guess, to fill in right after the update (`/repo:update`):
+- [ ] run `ion repo install --machine` once on each machine, so that its Claude Code catalogue moves from kiln to ion-repo. (v0.4.11)
 
 ## 🟠 Important
 
