@@ -1,0 +1,22 @@
+"""Converters of `ion repo fix`: the slimming pillar (ion-repo#T-139), the compressor's two
+phases."""
+
+from ion_score.compressor import remove_dead_code, remove_unused_dependencies
+from ion_score.fixers import Fixer, register
+
+register(
+    Fixer(
+        "remove_dead_code",
+        remove_dead_code,
+        "dead code removed, each removal proven by the types and the tests",
+        network=True,
+    )
+)
+register(
+    Fixer(
+        "remove_unused_dependencies",
+        remove_unused_dependencies,
+        "unused dependencies removed, each removal proven by the types and the tests",
+        network=True,
+    )
+)

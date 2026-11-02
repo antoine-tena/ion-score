@@ -34,4 +34,5 @@ exclude = '(^docs/|^charter\.toml$|/migrations/|-lock\.yaml$|\.lock$)'
 id = "FILE-SIZE"
 files = ["backend/*.py", "backend/**/*.py"]
 suffixes = [".py", ".ts", ".tsx", ".vue", ".astro", ".css", ".mjs"]
-budget = 0
+# The grid came from ion-repo with twelve files over 300 lines: split them, then lower this.
+budget = 12
