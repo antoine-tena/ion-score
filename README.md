@@ -20,7 +20,9 @@ Puis lancer l'outil : `cd backend && uv run ion-score --help`, ou l'installer su
 
 ## Organisation
 
-- `backend/` : l'outil en ligne de commande `ion-score`.
+- `backend/` : l'outil en ligne de commande `ion-score` et la grille (`backend/ion_score/rules/`,
+  une règle sourcée par fichier), venue d'ion-repo avec son historique. ion-repo dépend du paquet
+  `ion-score` : `ion repo grid`, `ion repo score` et `ion repo fix` appellent son code.
 - [`CLAUDE.md`](CLAUDE.md) et [`.claude/rules/ion-repo/`](.claude/rules/ion-repo/) : la charte du code
   et la façon de travailler, pour les humains comme pour les agents.
 - `.vscode/` : réglages et extensions recommandées, partagés par toute l'équipe.
@@ -43,6 +45,13 @@ risque.
 cd backend && uv run ion-score --help
 uv tool install --editable backend   # depuis la racine : la commande sur tout le poste
 ```
+
+- `ion-score grid [ID]` : les règles tenues pour les meilleures, avec leurs sources (`--theme`,
+  `--scope`, `--level`).
+- `ion-score grade [chemin]` : la note d'un dépôt face à la grille (`--json`, `--badge`, `--all`,
+  `--roadmap [--write]`, `--rule ID`, `--against REF`, `--online`).
+- `ion-score fix [chemin]` : ferme par script les écarts qu'un script sait fermer (`--dry-run`,
+  `--rule ID`).
 
 ## Vérifier le code
 
