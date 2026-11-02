@@ -13,9 +13,8 @@ from pathlib import Path
 
 import pytest
 
-from ion_repo import cli
-from ion_repo.grid import roadmap, score
-from ion_repo.shell import KilnError
+from ion_score import cli, roadmap, score
+from ion_score.shell import IonError
 
 SHA = "b4ffde65f46336ab88eb53be808477a3936bae11"
 GOOD = {
@@ -29,6 +28,10 @@ GOOD = {
     ".github/dependabot.yml": "version: 2\nupdates:\n  - package-ecosystem: uv\n"
     "    cooldown:\n      default-days: 7\n",
 }
+
+
+def show(report: score.Report, *, every: bool = False) -> None:
+    sys.stdout.write("".join(f"{line}\n" for line in score.screen(report, every=every)))
 
 
 def make(root: Path, files: dict[str, str]) -> Path:
@@ -82,7 +85,7 @@ def test_a_repo_worked_with_an_agent_is_advised_its_instructions(
 
     assert report.score == 100
     assert [found.rule for found in report.advice] == ["AI-CONTEXT"]
-    score.show(report)
+    show(report)
     out = capsys.readouterr().out
     assert "Advice (out of the score)" in out
     stacks = next(line for line in out.splitlines() if "stacks:" in line)
@@ -100,7 +103,7 @@ def test_a_text_that_is_not_utf8_is_read_not_skipped(
 
     assert statuses(report)["BARE-EXCEPT"] == "fail"
     assert report.not_utf8 == ("app.py (cp1252)", "notes.py (utf-16)")
-    score.show(report)
+    show(report)
     assert "not UTF-8, read all the same: app.py (cp1252)" in capsys.readouterr().out
 
 
@@ -120,13 +123,13 @@ def test_github_settings_out_of_reach_are_left_out_and_said(
 ) -> None:
     root = make(tmp_path, GOOD)
     subprocess.run(["git", "-C", str(root), "remote", "add", "origin", "https://github.com/a/b"])
-    monkeypatch.setattr("ion_repo.grid.forge.ENABLED", True)
-    monkeypatch.setattr("ion_repo.grid.forge.shutil.which", lambda name: None)
+    monkeypatch.setattr("ion_score.forge.ENABLED", True)
+    monkeypatch.setattr("ion_score.forge.shutil.which", lambda name: None)
     report = score.score_repo(root)
 
     assert report.score == 100
     assert statuses(report)["FORGE-SECRET-SCANNING"] == "n/a"
-    score.show(report)
+    show(report)
     assert "GitHub settings unknown" in capsys.readouterr().out
 
 
@@ -165,7 +168,7 @@ def test_a_language_not_scored_yet_is_said_beside_the_score(
 ) -> None:
     files = {**GOOD, "Cargo.toml": "[package]\n", "src/main.rs": "fn main() {}\n"}
 
-    score.show(score.score_repo(make(tmp_path, files)))
+    show(score.score_repo(make(tmp_path, files)))
 
     header = capsys.readouterr().out.strip().splitlines()[:4]
     assert any("not scored yet: Rust" in line for line in header)
@@ -192,18 +195,15 @@ def test_json_badge_and_screen(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     root = make(tmp_path, {**GOOD, "app.py": "import os  # noqa\n"})
-    monkeypatch.setattr(sys, "argv", ["kiln", "score", str(root), "--json"])
-    cli.main()
+    assert cli.main(["grade", str(root), "--json"]) == cli.EXIT_OK
     data = json.loads(capsys.readouterr().out)
     assert data["schema"] == score.SCHEMA and data["top_gaps"] == ["NOQA-CODES"]
     assert {"rule", "status", "why", "source", "fix", "locations"} <= set(data["findings"][0])
 
-    monkeypatch.setattr(sys, "argv", ["kiln", "score", str(root), "--badge"])
-    cli.main()
+    cli.main(["grade", str(root), "--badge"])
     assert "img.shields.io/badge/kiln_score-" in capsys.readouterr().out
 
-    monkeypatch.setattr(sys, "argv", ["kiln", "score", str(root)])
-    cli.main()
+    cli.main(["grade", str(root)])
     screen = capsys.readouterr().out
     assert "ion repo score" in screen and "NOQA-CODES" in screen and "app.py:1" in screen
 
@@ -214,20 +214,18 @@ def test_the_score_closes_a_screen_long_with_gaps(
     # An old repo lists a hundred lines of gaps: its score would scroll out of sight.
     root = make(tmp_path, {**GOOD, "app.py": "import os  # noqa\n"})
     report = score.score_repo(root)
-    score.show(report)
+    show(report)
     last = capsys.readouterr().out.rstrip().splitlines()[-1]
     assert f"{report.score}/100" in last and "1 gap" in last
 
-    score.show(score.score_repo(make(tmp_path / "good", GOOD)))
+    show(score.score_repo(make(tmp_path / "good", GOOD)))
     assert "gap" not in capsys.readouterr().out.rstrip().splitlines()[-1]
 
 
 def test_a_missing_folder_is_said(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    monkeypatch.setattr(sys, "argv", ["kiln", "score", str(tmp_path / "nowhere")])
-    with pytest.raises(SystemExit):
-        cli.main()
+    assert cli.main(["grade", str(tmp_path / "nowhere")]) == cli.EXIT_FAILURE
     assert "no folder" in capsys.readouterr().err
 
 
@@ -278,14 +276,15 @@ def test_rule_fails_while_the_gap_is_open_and_passes_once_closed(
 ) -> None:
     root = make(tmp_path, LEGACY)
     report = score.score_repo(root)
-    with pytest.raises(KilnError, match="BARE-EXCEPT still open"):
-        roadmap.show_rule(report, score.rule_finding(report, "BARE-EXCEPT"), "BARE-EXCEPT")
+    assert cli.main(["grade", str(root), "--rule", "BARE-EXCEPT"]) == cli.EXIT_FAILURE
+    assert "BARE-EXCEPT still open" in capsys.readouterr().err
 
     (root / "app.py").write_text("try:\n    pass\nexcept ValueError:\n    pass\n")
     report = score.score_repo(root)
-    roadmap.show_rule(report, score.rule_finding(report, "BARE-EXCEPT"), "BARE-EXCEPT")
+    found = score.rule_finding(report, "BARE-EXCEPT")
 
-    assert "BARE-EXCEPT: pass" in capsys.readouterr().out
+    assert found is not None and not roadmap.is_open(found)
+    assert "BARE-EXCEPT: pass" in "\n".join(roadmap.rule_screen(found, "BARE-EXCEPT"))
 
 
 def test_write_turns_items_into_tickets_once(tmp_path: Path) -> None:
@@ -307,5 +306,5 @@ def test_write_turns_items_into_tickets_once(tmp_path: Path) -> None:
 def test_without_a_backlog_write_says_how_to_get_one(tmp_path: Path) -> None:
     root = make(tmp_path, LEGACY)
 
-    with pytest.raises(KilnError, match="ion repo adopt"):
+    with pytest.raises(IonError, match="ion repo adopt"):
         roadmap.write_tickets(root, score.score_repo(root))

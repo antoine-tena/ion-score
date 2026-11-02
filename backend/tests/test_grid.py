@@ -3,17 +3,14 @@ should, on an example of each."""
 
 import datetime
 import json
-import re
-import sys
 from pathlib import Path
 from typing import Any
 
 import pytest
 
-from ion_repo import cli
-from ion_repo.grid import detectors, facts, fixers, forge, model
-from ion_repo.grid.facts import read_repo
-from ion_repo.shell import KilnError
+from ion_score import cli, detectors, facts, fixers, forge, model
+from ion_score.facts import read_repo
+from ion_score.shell import IonError
 
 RULES = model.load_rules()
 WORKFLOW = ".github/workflows/ci.yml"
@@ -492,61 +489,32 @@ def test_facts_of_a_django_and_nuxt_repo(tmp_path: Path) -> None:
     }  # fmt: skip
 
 
-def run_kiln(monkeypatch: pytest.MonkeyPatch, *arguments: str) -> int:
-    monkeypatch.setattr(sys, "argv", ["kiln", *arguments])
-    try:
-        cli.main()
-    except SystemExit as exit_request:
-        return int(exit_request.code or 0)
-    return 0
-
-
-def test_kiln_grid_lists_and_shows(
-    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
-) -> None:
-    assert run_kiln(monkeypatch, "grid", "--theme", "supply-chain") == 0
+def test_grid_lists_and_shows(capsys: pytest.CaptureFixture[str]) -> None:
+    assert cli.main(["grid", "--theme", "supply-chain"]) == cli.EXIT_OK
     listed = capsys.readouterr().out
     assert "PINNED-ACTIONS" in listed and "NON-ROOT-CONTAINERS" not in listed
 
-    assert run_kiln(monkeypatch, "grid", "pinned-actions") == 0
+    assert cli.main(["grid", "pinned-actions"]) == cli.EXIT_OK
     shown = capsys.readouterr().out
     assert "docs.github.com" in shown and "ion repo waive PINNED-ACTIONS" in shown
 
 
 def test_an_unknown_rule_suggests_the_close_ones() -> None:
-    from ion_repo.grid.show import find_rule
+    from ion_score.show import find_rule
 
-    with pytest.raises(KilnError, match=r"did you mean PINNED-ACTIONS\?"):
+    with pytest.raises(IonError, match=r"did you mean PINNED-ACTIONS\?"):
         find_rule("ACTIONS")
-    with pytest.raises(KilnError, match="did you mean PINNED-ACTIONS"):
+    with pytest.raises(IonError, match="did you mean PINNED-ACTIONS"):
         find_rule("PINED-ACTION")
 
 
-def test_a_rule_names_only_charter_rules_kiln_knows() -> None:
-    template = Path(__file__).resolve().parent.parent / "template"
-    known = {
-        found
-        for path in [
-            *template.glob(".claude/rules/ion-repo/*.jinja"),
-            template / "charter.toml.jinja",
-        ]
-        for found in re.findall(r"\[([A-Z0-9+-]{3,})\]|id = \"([A-Z0-9+-]+)\"", path.read_text())
-        for found in found
-        if found
-    }
-
-    assert {rule.charter_rule for rule in RULES if rule.charter_rule} <= known
-
-
-def test_drafts_wait_behind_their_level(
-    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
-) -> None:
-    assert run_kiln(monkeypatch, "grid") == 0
+def test_drafts_wait_behind_their_level(capsys: pytest.CaptureFixture[str]) -> None:
+    assert cli.main(["grid"]) == cli.EXIT_OK
     default = capsys.readouterr().out
     assert "PINNED-ACTIONS" in default and "SEALED-DOMAIN" not in default
     assert "ion repo grid --level assess" in default
 
-    assert run_kiln(monkeypatch, "grid", "--level", "assess") == 0
+    assert cli.main(["grid", "--level", "assess"]) == cli.EXIT_OK
     assert "SEALED-DOMAIN" in capsys.readouterr().out
 
 

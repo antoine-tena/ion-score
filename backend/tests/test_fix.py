@@ -12,11 +12,11 @@ from pathlib import Path
 import pytest
 import yaml
 
-from ion_repo.grid import checks, detectors, fix, roadmap, score
-from ion_repo.grid.facts import Repo, read_repo
-from ion_repo.grid.fixers import FIXERS, ci, containers, python, resolve
-from ion_repo.grid.model import load_rules
-from ion_repo.shell import KilnError
+from ion_score import checks, detectors, fix, roadmap, score
+from ion_score.facts import Repo, read_repo
+from ion_score.fixers import FIXERS, ci, containers, python, resolve
+from ion_score.model import load_rules
+from ion_score.shell import IonError
 
 SHA = "b4ffde65f46336ab88eb53be808477a3936bae11"
 DIGEST = "sha256:" + "a" * 64
@@ -161,7 +161,7 @@ def test_hardening_is_never_guessed_without_podman(
 ) -> None:
     root = make(tmp_path, CONVERTED["HARDENED-CONTAINERS"])
     monkeypatch.setattr(containers, "_podman_ready", lambda: False)
-    with pytest.raises(KilnError, match="podman and podman-compose are needed"):
+    with pytest.raises(IonError, match="podman and podman-compose are needed"):
         containers.harden_compose(read_repo(root))
 
 
@@ -403,8 +403,8 @@ def test_a_converter_that_turns_the_checks_red_is_undone_and_handed_to_claude(
     report = score.score_repo(root)
     assert "TS-EXPECT-ERROR" in [found.rule for found in report.roadmap()]
     capsys.readouterr()
-    roadmap.show_roadmap(report)
-    assert f"ion repo fix's commit broke a check, set aside: {log}" in capsys.readouterr().out
+    shown = "\n".join(roadmap.screen(report))
+    assert f"ion repo fix's commit broke a check, set aside: {log}" in shown
 
 
 @pytest.mark.parametrize(("built_before", "status"), [(True, "reverted"), (False, "fixed")])
@@ -541,7 +541,7 @@ def test_kiln_update_names_a_converter_that_fails(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     def offline(repo: str, ref: str) -> str:
-        raise KilnError("GitHub unreachable")
+        raise IonError("GitHub unreachable")
 
     monkeypatch.setattr(resolve, "commit_of", offline)
     unpinned = "jobs:\n  a:\n    steps:\n      - uses: actions/checkout@v4\n"
@@ -641,6 +641,7 @@ def test_missing_jobs_come_as_workflows_of_their_own(tmp_path: Path) -> None:
             "      - run: cd web && npm run lint\n"
         )
     )
+    # Forbidden tool: the pip line expected in the CI of a repo still on pip.
     assert (
         "      - run: pip install -r requirements.txt pytest\n"
         in (workflows / "tests.yml").read_text()

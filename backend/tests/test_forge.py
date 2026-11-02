@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from ion_repo.grid import forge
+from ion_score import forge
 
 SLUG = "acme/app"
 REPO = {

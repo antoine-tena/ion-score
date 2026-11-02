@@ -9,11 +9,11 @@ from pathlib import Path
 
 import pytest
 
-from ion_repo.grid import compressor
-from ion_repo.grid.compressor import candidates, proof, removal
-from ion_repo.grid.compressor.candidates import CODE, DEPENDENCY, Candidate
-from ion_repo.grid.facts import read_repo
-from ion_repo.shell import KilnError
+from ion_score import compressor
+from ion_score.compressor import candidates, proof, removal
+from ion_score.compressor.candidates import CODE, DEPENDENCY, Candidate
+from ion_score.facts import read_repo
+from ion_score.shell import IonError
 
 CORE = textwrap.dedent(
     '''\
@@ -251,7 +251,7 @@ def test_no_test_that_passes_proves_nothing(
 
 def test_without_tests_nothing_is_removed(tmp_path: Path) -> None:
     make(tmp_path, {"app/core.py": CORE})
-    with pytest.raises(KilnError, match="no tests to prove"):
+    with pytest.raises(IonError, match="no tests to prove"):
         compressor.compress(read_repo(tmp_path), compressor.CODE_PHASE)
 
 
