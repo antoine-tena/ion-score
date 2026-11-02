@@ -9,20 +9,19 @@ to the repo's: its jobs and their setup are left as they are.
 import re
 from collections.abc import Callable
 
-import yaml  # brought by copier
+import yaml
 
-from ion_repo.grid import checks
-from ion_repo.grid.detectors import (
+from ion_score import checks
+from ion_score.detectors import (
     EXPRESSION,
     WORKFLOWS,
     untrusted_expressions,
     workflow_scripts,
 )
-from ion_repo.grid.facts import Repo
-from ion_repo.grid.fixers import Fixer, register
-from ion_repo.grid.fixers.ci import _write, write_workflow
-from ion_repo.shell import capture, run
-from ion_repo.stack import PNPM_LENIENT_BUILDS
+from ion_score.facts import Repo
+from ion_score.fixers import Fixer, register
+from ion_score.fixers.ci import PNPM_LENIENT_BUILDS, _write, write_workflow
+from ion_score.shell import capture, run
 
 # A bare context read (`github.event.issue.title`): moved to `env:` as it is. Anything more (a
 # function, `||`) is left to judgment.
@@ -159,6 +158,7 @@ def _install(repo: Repo, folder: str, *, python: bool, node: bool) -> list[str]:
             if "/" not in name[len(base) :]
         )
         listed = "".join(f"-r {name} " for name in requirements)
+        # Forbidden tool: the CI of a repo still on pip, written as the repo installs today.
         steps.append(f"{prefix}pip install {listed}pytest")
     if node and f"{base}pnpm-lock.yaml" in names:
         steps.append(f"{prefix}pnpm install --frozen-lockfile {PNPM_LENIENT_BUILDS}")

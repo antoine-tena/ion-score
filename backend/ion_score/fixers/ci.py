@@ -7,12 +7,15 @@ import json
 import re
 from pathlib import PurePosixPath
 
-import yaml  # brought by copier
+import yaml
 
-from ion_repo.grid.detectors import CONTAINER_FILES, WORKFLOWS
-from ion_repo.grid.facts import Repo
-from ion_repo.grid.fixers import Fixer, register, resolve
-from ion_repo.stack import PNPM_LENIENT_BUILDS
+from ion_score.detectors import CONTAINER_FILES, WORKFLOWS
+from ion_score.facts import Repo
+from ion_score.fixers import Fixer, register, resolve
+
+# pnpm 11+ fails on a dependency's build script that `allowBuilds` (pnpm-workspace.yaml) does not
+# list (ERR_PNPM_IGNORED_BUILDS): a repo without that list skips them, as ion-repo's template does.
+PNPM_LENIENT_BUILDS = "--config.strict-dep-builds=false"
 
 COOLDOWN_DAYS = 7
 DEPENDABOT = ".github/dependabot.yml"
@@ -211,6 +214,8 @@ def add_secret_scan(repo: Repo) -> list[str]:
     image = f"ghcr.io/gitleaks/gitleaks:{version}"
     digest = resolve.image_digest(image)
     workflow = ".github/workflows/secrets.yml"
+    # Forbidden tool: GitHub's runners have docker, not podman; the scan runs there only.
+    scanner = f'docker run --rm -v "$PWD:/repo" {image}@{digest}'
     _write(
         repo,
         workflow,
@@ -229,7 +234,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - run: >-
-          docker run --rm -v "$PWD:/repo" {image}@{digest}
+          {scanner}
           git /repo --redact --no-banner
 """,
     )
@@ -247,6 +252,7 @@ def _ci_steps(repo: Repo) -> list[str]:
         if "pytest" in text or repo.matching("tests/**/*.py", "**/test_*.py"):
             steps.append("uv run pytest -q")
     elif repo.matching("requirements*.txt"):
+        # Forbidden tool: the CI of a repo still on pip, written as the repo installs today.
         steps += [f"pip install -r {name}" for name in sorted(repo.matching("requirements*.txt"))]
         if repo.matching("**/test_*.py", "tests/**/*.py"):
             steps += ["pip install pytest", "python -m pytest -q"]

@@ -6,9 +6,9 @@ import subprocess
 import tomllib
 from pathlib import Path, PurePosixPath
 
-from ion_repo.grid.facts import Repo
-from ion_repo.grid.fixers import Fixer, register
-from ion_repo.shell import KilnError
+from ion_score.facts import Repo
+from ion_score.fixers import Fixer, register
+from ion_score.shell import IonError
 
 BACKPORT = re.compile(
     r"(?i)^\s*[\"']?(typing|enum34|futures|pathlib|dataclasses)\s*([<>=~!;\"',]|$)"
@@ -47,7 +47,7 @@ def lock_requirements(repo: Repo) -> list[str]:
     if not loose:
         return []
     if shutil.which("uv") is None:
-        raise KilnError("uv is needed to compile the requirements: https://docs.astral.sh/uv/")
+        raise IonError("uv is needed to compile the requirements: https://docs.astral.sh/uv/")
     if "requirements.txt" in loose and not (repo.root / "pyproject.toml").exists():
         made = _uv_project(repo)
         if made:
@@ -70,7 +70,7 @@ def lock_requirements(repo: Repo) -> list[str]:
             continue
         changed += [source, name]
     if failed and not changed:
-        raise KilnError("uv could not compile " + "; ".join(failed))
+        raise IonError("uv could not compile " + "; ".join(failed))
     return changed
 
 

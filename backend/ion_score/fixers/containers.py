@@ -17,14 +17,13 @@ import time
 from collections.abc import Callable
 from pathlib import Path
 
-import yaml  # brought by copier
+import yaml
 
-from ion_repo import shell, ui
-from ion_repo.grid import detectors
-from ion_repo.grid.detectors import COMPOSE_FILES, CONTAINER_FILES
-from ion_repo.grid.facts import Repo
-from ion_repo.grid.fixers import Fixer, register, resolve
-from ion_repo.shell import KilnError
+from ion_score import detectors, shell, ui
+from ion_score.detectors import COMPOSE_FILES, CONTAINER_FILES
+from ion_score.facts import Repo
+from ion_score.fixers import Fixer, register, resolve
+from ion_score.shell import IonError
 
 FROM = re.compile(r"^(?P<head>\s*FROM\s+(?:--\S+\s+)*)(?P<image>\S+)(?P<tail>.*)$", re.I)
 OLD_DEBIAN = re.compile(r"\b(bookworm|bullseye|buster|stretch)\b")
@@ -300,7 +299,7 @@ def harden_compose(repo: Repo) -> list[str]:
     if not targets:
         return []
     if not _podman_ready():
-        raise KilnError(
+        raise IonError(
             "podman and podman-compose are needed to prove each service still starts hardened: "
             "https://podman.io/docs/installation"
         )
@@ -315,7 +314,7 @@ def harden_compose(repo: Repo) -> list[str]:
             changed.append(name)
         left += [f"{name} ({service})" for service in services if service not in started]
     if not changed:
-        raise KilnError(f"no service starts hardened: {', '.join(left)}")
+        raise IonError(f"no service starts hardened: {', '.join(left)}")
     if left:
         ui.note(f"left as they were, they do not start hardened: {', '.join(left)}")
     return changed

@@ -8,7 +8,7 @@ import subprocess
 import urllib.error
 import urllib.request
 
-from ion_repo.shell import KilnError
+from ion_score.shell import IonError
 
 TIMEOUT = 15
 SEMVER = re.compile(r"^v?(\d+)(?:\.(\d+))?(?:\.(\d+))?$")
@@ -26,7 +26,7 @@ def remote_refs(repo: str) -> dict[str, str]:
         env={"GIT_TERMINAL_PROMPT": "0", "PATH": "/usr/bin:/bin:/usr/local/bin"},
     )
     if done.returncode != 0:
-        raise KilnError(f"cannot read {repo} on GitHub: {done.stderr.strip()[:120]}")
+        raise IonError(f"cannot read {repo} on GitHub: {done.stderr.strip()[:120]}")
     refs: dict[str, str] = {}
     for line in done.stdout.splitlines():
         sha, _, name = line.partition("\t")
@@ -41,7 +41,7 @@ def remote_refs(repo: str) -> dict[str, str]:
 def commit_of(repo: str, ref: str) -> str:
     refs = remote_refs(repo)
     if ref not in refs:
-        raise KilnError(f"{repo} has no tag or branch {ref}")
+        raise IonError(f"{repo} has no tag or branch {ref}")
     return refs[ref]
 
 
@@ -64,7 +64,7 @@ def latest_release(repo: str, major: str | None = None) -> str:
         if found and (major is None or name.lstrip("v").split(".")[0] == major.lstrip("v")):
             versions.append((tuple(int(part or 0) for part in found.groups()), name))
     if not versions:
-        raise KilnError(f"{repo} has no release tag")
+        raise IonError(f"{repo} has no release tag")
     return max(versions)[1]
 
 
@@ -113,18 +113,18 @@ def image_digest(image: str) -> str:
         answer, _ = _get(url, headers, "HEAD")
     except urllib.error.HTTPError as error:
         if error.code != 401:
-            raise KilnError(f"{image}: registry answered {error.code}") from error
+            raise IonError(f"{image}: registry answered {error.code}") from error
         challenge = error.headers.get("WWW-Authenticate", "")
         fields = dict(re.findall(r'(\w+)="([^"]*)"', challenge))
         if "realm" not in fields:
-            raise KilnError(f"{image}: registry asks for credentials") from error
+            raise IonError(f"{image}: registry asks for credentials") from error
         query = f"?service={fields.get('service', '')}&scope=repository:{path}:pull"
         _, body = _get(fields["realm"] + query, {})
         token = json.loads(body).get("token") or json.loads(body).get("access_token")
         answer, _ = _get(url, {**headers, "Authorization": f"Bearer {token}"}, "HEAD")
     except urllib.error.URLError as error:
-        raise KilnError(f"{image}: registry unreachable ({error.reason})") from error
+        raise IonError(f"{image}: registry unreachable ({error.reason})") from error
     digest = {key.lower(): value for key, value in answer.items()}.get("docker-content-digest")
     if not digest:
-        raise KilnError(f"{image}: the registry gave no digest")
+        raise IonError(f"{image}: the registry gave no digest")
     return digest
