@@ -3,7 +3,9 @@ name = "ion-score"
 version = "0.1.0"
 description = "Le moteur de r\u00e8gles de la famille Ion : les r\u00e8gles sourc\u00e9es et la note."
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "pyyaml>=6.0.3",
+]
 
 # The installed command: `uv run ion-score` in backend/, or `uv tool install --editable backend`.
 [project.scripts]
@@ -22,6 +24,7 @@ dev = [
     "pytest>=9.1.1,<10.0.0",
     "pytest-cov>=7.1.0,<8.0.0",
     "ruff>=0.17.2,<0.18.0",
+    "types-pyyaml>=6.0.12.20261030",
 ]
 
 [tool.ruff]
@@ -36,6 +39,9 @@ strict = true
 
 [tool.pytest.ini_options]
 python_files = ["test_*.py"]
+# End-to-end tests (slow, networked) run only when asked: `uv run pytest -m e2e`.
+addopts = "-m 'not e2e'"
+markers = ["e2e: end to end, slow and networked (uv run pytest -m e2e)"]
 
 [tool.coverage.run]
 source = ["ion_score"]
