@@ -75,6 +75,13 @@ def paint(
     return f"{codes}{text}{RESET}" if codes else text
 
 
+def write_line(text: str = "", stream: TextIO | None = None) -> None:
+    """One line to `stream` (standard output by default, read at the call), written at once."""
+    out = stream or sys.stdout
+    out.write(f"{text}\n")
+    out.flush()
+
+
 @dataclass
 class StepRecord:
     title: str
@@ -100,9 +107,9 @@ def step(title: str) -> None:
     for watcher in _step_watchers:
         watcher.show(title)
     if is_styled():
-        print(f"\n{paint('◆', FIRE)} {paint(title, bold=True)}", flush=True)
+        write_line(f"\n{paint('◆', FIRE)} {paint(title, bold=True)}")
     else:
-        print(f"\n==> {title}", flush=True)
+        write_line(f"\n==> {title}")
 
 
 @contextmanager
@@ -120,16 +127,16 @@ def steps_elsewhere(spinner: Spinner | None) -> Iterator[None]:
 
 
 def success(message: str) -> None:
-    print(f"\n{paint('✓', MOSS, bold=True)} {paint(message, bold=True)}", flush=True)
+    write_line(f"\n{paint('✓', MOSS, bold=True)} {paint(message, bold=True)}")
 
 
 def note(message: str) -> None:
-    print(paint(message, dim=True), flush=True)
+    write_line(paint(message, dim=True))
 
 
 def error(message: str) -> None:
     mark = paint("✗", EMBER, bold=True, stream=sys.stderr)
-    print(f"{mark} {paint('ion-repo', bold=True, stream=sys.stderr)}: {message}", file=sys.stderr)
+    write_line(f"{mark} {paint('ion-repo', bold=True, stream=sys.stderr)}: {message}", sys.stderr)
 
 
 def _close_last_step() -> None:
@@ -208,11 +215,11 @@ class Spinner:
         )
         elapsed = paint(format_duration(time.monotonic() - self.started), STONE_DARK, stream=stream)
         label = _fit(self.label, _columns() - 16)
-        print(f"  {mark} {paint(label, STONE, stream=stream)}  {elapsed}", file=stream, flush=True)
+        write_line(f"  {mark} {paint(label, STONE, stream=stream)}  {elapsed}", stream)
         if not succeeded:
             margin = paint("│", EMBER, stream=stream)
             for line in output.rstrip().splitlines():
-                print(f"    {margin} {line}", file=stream)
+                write_line(f"    {margin} {line}", stream)
             stream.flush()
 
     def _spin(self) -> None:
@@ -257,7 +264,7 @@ def recap(command: str, started: float, *, succeeded: bool) -> None:
         verdict = f"Interrupted after {total}"
     if not is_styled():
         count = len(_steps)
-        print(f"\n{verdict} ({count} step{'s' if count > 1 else ''})", flush=True)
+        write_line(f"\n{verdict} ({count} step{'s' if count > 1 else ''})")
         return
     durations = [format_duration(record.duration) for record in _steps]
     inner = min(
@@ -270,18 +277,18 @@ def recap(command: str, started: float, *, succeeded: bool) -> None:
     edge = foreground(STONE_DARK)
     bar = f"{edge}│{RESET}"
     mark = paint("✓", MOSS, bold=True) if succeeded else paint("✗", EMBER, bold=True)
-    print(f"\n  {edge}╭{'─' * (inner + 2)}╮{RESET}")
+    write_line(f"\n  {edge}╭{'─' * (inner + 2)}╮{RESET}")
     head = paint(_fit(verdict, inner - 2), bold=True)
-    print(f"  {bar} {mark} {head}{' ' * (inner - 2 - len(_fit(verdict, inner - 2)))} {bar}")
-    print(f"  {edge}├{'─' * (inner + 2)}┤{RESET}")
+    write_line(f"  {bar} {mark} {head}{' ' * (inner - 2 - len(_fit(verdict, inner - 2)))} {bar}")
+    write_line(f"  {edge}├{'─' * (inner + 2)}┤{RESET}")
     for index, (record, duration) in enumerate(zip(_steps, durations, strict=True)):
         is_failure = record.failed or (not succeeded and index == len(_steps) - 1)
         title = _fit(record.title, inner - len(duration) - 4)
         gap = " " * (inner - 2 - len(title) - len(duration))
         dot = paint("✗", EMBER) if is_failure else paint("·", STONE_DARK)
         shown = paint(title, EMBER) if is_failure else title
-        print(f"  {bar} {dot} {shown}{gap}{paint(duration, STONE)} {bar}")
-    print(f"  {edge}╰{'─' * (inner + 2)}╯{RESET}", flush=True)
+        write_line(f"  {bar} {dot} {shown}{gap}{paint(duration, STONE)} {bar}")
+    write_line(f"  {edge}╰{'─' * (inner + 2)}╯{RESET}")
 
 
 def panel(title: str, lines: list[str]) -> None:
@@ -289,16 +296,18 @@ def panel(title: str, lines: list[str]) -> None:
     line wraps under its own text, never cut; `code` spans of the changelog show in colour,
     without their backticks."""
     if not is_styled():
-        print(f"\n{title}", *(f"  {line}" for line in lines), sep="\n", flush=True)
+        write_line("\n".join([f"\n{title}", *(f"  {line}" for line in lines)]))
         return
     widest = max(len(title), *(len(line.replace("`", "")) for line in lines))
     inner = min(widest + 2, _columns() - 6)
     edge = foreground(STONE_DARK)
     bar = f"{edge}│{RESET}"
-    print(f"\n  {edge}╭{'─' * (inner + 2)}╮{RESET}")
+    write_line(f"\n  {edge}╭{'─' * (inner + 2)}╮{RESET}")
     shown_title = _fit(title, inner)
-    print(f"  {bar} {paint(shown_title, FIRE, bold=True)}{' ' * (inner - len(shown_title))} {bar}")
-    print(f"  {edge}├{'─' * (inner + 2)}┤{RESET}")
+    write_line(
+        f"  {bar} {paint(shown_title, FIRE, bold=True)}{' ' * (inner - len(shown_title))} {bar}"
+    )
+    write_line(f"  {edge}├{'─' * (inner + 2)}┤{RESET}")
     for line in lines:
         is_bullet = line.startswith("- ")
         is_heading = line[:1] == "v" and line[1:2].isdigit()
@@ -316,8 +325,8 @@ def panel(title: str, lines: list[str]) -> None:
                 styled = paint(visible, STONE)
             lead = (paint("·", FIRE) + " " if index == 0 else "  ") if is_bullet else ""
             gap = " " * (inner - indent - len(visible))
-            print(f"  {bar} {lead}{styled}{gap} {bar}")
-    print(f"  {edge}╰{'─' * (inner + 2)}╯{RESET}", flush=True)
+            write_line(f"  {bar} {lead}{styled}{gap} {bar}")
+    write_line(f"  {edge}╰{'─' * (inner + 2)}╯{RESET}")
 
 
 # A word of a changelog line: its pieces, each in a `code` span or not ("(`ci_runner`)" is three).
