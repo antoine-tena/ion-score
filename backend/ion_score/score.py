@@ -16,12 +16,11 @@ from dataclasses import asdict, dataclass, field
 from fnmatch import fnmatchcase
 from pathlib import Path, PurePosixPath
 
-from ion_repo import ui
-from ion_repo.charter.waivers import Waivers
-from ion_repo.charter.waivers import load as load_waivers
-from ion_repo.grid import checks, detectors, forge
-from ion_repo.grid.facts import Repo, read_repo
-from ion_repo.grid.model import PILLARS, Rule, load_rules
+from ion_score import checks, detectors, forge, ui
+from ion_score.facts import Repo, read_repo
+from ion_score.model import PILLARS, Rule, load_rules
+from ion_score.waivers import Waivers
+from ion_score.waivers import load as load_waivers
 
 # The version of the `--json` output; it only goes up when a field changes meaning or leaves.
 SCHEMA = 1
@@ -348,26 +347,28 @@ def as_json(report: Report) -> str:
     return json.dumps(data, indent=2, ensure_ascii=False)
 
 
-def show(report: Report, *, every: bool = False) -> None:
+def screen(report: Report, *, every: bool = False) -> list[str]:
+    """The report as the lines of a screen, painted for standard output."""
+    lines: list[str] = []
     score = "n/a" if report.score is None else f"{report.score}/100"
     title = ui.paint("ion repo score", ui.FIRE, bold=True)
-    print(f"\n  {title}  {ui.paint(score, ui.GLOW, bold=True)}")
+    lines.append(f"\n  {title}  {ui.paint(score, ui.GLOW, bold=True)}")
     pillars = [f"{pillar} {value}" for pillar, value in report.pillars.items() if value is not None]
-    print(ui.paint(f"  {'  ·  '.join(pillars)}", ui.STONE_LIGHT))
+    lines.append(ui.paint(f"  {'  ·  '.join(pillars)}", ui.STONE_LIGHT))
     found_stacks = [fact for fact in report.facts if fact not in NOT_STACKS]
     stacks = f"  stacks: {', '.join(found_stacks) or 'none found'}"
     if languages := _languages(report.uncovered):
         # A visitor's Go or Rust repo: the number holds none of its language's rules yet.
         stacks += f"  ·  not scored yet: {', '.join(languages)}"
-    print(ui.paint(stacks, ui.STONE))
+    lines.append(ui.paint(stacks, ui.STONE))
     if report.uncovered and not found_stacks:
         only = "  universal rules only: the grid does not know this repo's stack"
-        print(ui.paint(only, ui.STONE))
+        lines.append(ui.paint(only, ui.STONE))
     counted = [found for found in report.findings if found.status in (PASSED, FAILED)]
     passed = sum(found.status == PASSED for found in counted)
-    print(ui.paint(f"  {passed} of {len(counted)} rules met", ui.STONE))
+    lines.append(ui.paint(f"  {passed} of {len(counted)} rules met", ui.STONE))
     if any(found.detail == forge.UNKNOWN for found in report.findings):
-        print(ui.paint(f"  {forge.UNKNOWN} (gh auth login)", ui.STONE))
+        lines.append(ui.paint(f"  {forge.UNKNOWN} (gh auth login)", ui.STONE))
     if report.not_utf8:
         shown = report.not_utf8 if every else report.not_utf8[:SHOWN_LOCATIONS]
         more = (
@@ -375,51 +376,62 @@ def show(report: Report, *, every: bool = False) -> None:
             if len(shown) < len(report.not_utf8)
             else ""
         )
-        print(ui.paint(f"  not UTF-8, read all the same: {', '.join(shown)}{more}", ui.STONE))
+        lines.append(
+            ui.paint(f"  not UTF-8, read all the same: {', '.join(shown)}{more}", ui.STONE)
+        )
     if top := report.top_gaps():
-        print(f"\n  {ui.paint('Close first', ui.FIRE, bold=True)}")
+        lines.append(f"\n  {ui.paint('Close first', ui.FIRE, bold=True)}")
         for found in top:
-            print(f"    {ui.paint(found.rule, ui.EMBER, bold=True)}  {found.title}")
-    _section("Gaps", report.gaps, ui.EMBER, locations=True, every=every)
-    _section(
+            lines.append(f"    {ui.paint(found.rule, ui.EMBER, bold=True)}  {found.title}")
+    lines += _section("Gaps", report.gaps, ui.EMBER, locations=True, every=every)
+    lines += _section(
         "Advice (out of the score)", list(report.advice), ui.STONE, locations=True, every=every
     )
     waived = [found for found in report.findings if found.status == WAIVED]
-    _section("Waived (accepted deviations)", waived, ui.STONE, locations=False, every=every)
+    lines += _section(
+        "Waived (accepted deviations)", waived, ui.STONE, locations=False, every=every
+    )
     if every:
         met = [found for found in report.findings if found.status == PASSED]
-        _section("Met", met, ui.MOSS, locations=False, every=every)
+        lines += _section("Met", met, ui.MOSS, locations=False, every=every)
         left_out = [found for found in report.findings if found.status == LEFT_OUT]
-        _section("Nothing to look at", left_out, ui.STONE, locations=False, every=every)
+        lines += _section("Nothing to look at", left_out, ui.STONE, locations=False, every=every)
     if report.uncovered or report.misfired:
-        print(f"\n  {ui.paint('What the grid does not know', ui.FIRE, bold=True)}")
+        lines.append(f"\n  {ui.paint('What the grid does not know', ui.FIRE, bold=True)}")
         for line in (*report.uncovered, *report.misfired):
-            print(ui.paint(f"    {line}", ui.STONE))
+            lines.append(ui.paint(f"    {line}", ui.STONE))
     hint = "" if every else "--all for every rule and location · "
-    print(ui.paint(f"\n  {hint}ion repo grid <ID> for a rule in full", ui.STONE))
-    print(ui.paint('  A deviation this repo accepts: ion repo waive <ID> --reason "…"', ui.STONE))
+    lines.append(ui.paint(f"\n  {hint}ion repo grid <ID> for a rule in full", ui.STONE))
+    lines.append(
+        ui.paint('  A deviation this repo accepts: ion repo waive <ID> --reason "…"', ui.STONE)
+    )
     if report.gaps:
         # An old repo's gaps run to a hundred lines: the score, said again where the eye ends.
         gaps = f"{len(report.gaps)} gap{'s' if len(report.gaps) > 1 else ''}"
-        print(f"\n  {title}  {ui.paint(score, ui.GLOW, bold=True)}  {ui.paint(gaps, ui.STONE)}")
+        lines.append(
+            f"\n  {title}  {ui.paint(score, ui.GLOW, bold=True)}  {ui.paint(gaps, ui.STONE)}"
+        )
+    return lines
 
 
 def _section(
     title: str, findings: list[Finding], color: ui.Color, *, locations: bool, every: bool
-) -> None:
+) -> list[str]:
     if not findings:
-        return
-    print(f"\n  {ui.paint(title, ui.FIRE, bold=True)}")
+        return []
+    lines: list[str] = []
+    lines.append(f"\n  {ui.paint(title, ui.FIRE, bold=True)}")
     for found in findings:
-        print(f"    {ui.paint(found.rule, color, bold=True)}  {found.title}")
+        lines.append(f"    {ui.paint(found.rule, color, bold=True)}  {found.title}")
         if not locations:
             continue
-        print(ui.paint(f"      why: {found.why}", ui.STONE_LIGHT))
+        lines.append(ui.paint(f"      why: {found.why}", ui.STONE_LIGHT))
         where = found.locations if every else found.locations[:SHOWN_LOCATIONS]
         for location in where:
-            print(ui.paint(f"      {location}", ui.STONE))
+            lines.append(ui.paint(f"      {location}", ui.STONE))
         if (more := len(found.locations) - len(where)) > 0:
-            print(ui.paint(f"      … and {more} more", ui.STONE))
+            lines.append(ui.paint(f"      … and {more} more", ui.STONE))
         if found.detail:
-            print(ui.paint(f"      {found.detail}", ui.STONE))
-        print(ui.paint(f"      fix: {found.fix} · source: {found.source}", ui.STONE))
+            lines.append(ui.paint(f"      {found.detail}", ui.STONE))
+        lines.append(ui.paint(f"      fix: {found.fix} · source: {found.source}", ui.STONE))
+    return lines

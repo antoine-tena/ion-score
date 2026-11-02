@@ -2,9 +2,9 @@
 
 import difflib
 
-from ion_repo import ui
-from ion_repo.grid.model import THEMES, Rule, load_rules
-from ion_repo.shell import KilnError
+from ion_score import ui
+from ion_score.model import THEMES, Rule, load_rules
+from ion_score.shell import IonError
 
 LEVEL_COLORS = {"adopt": ui.MOSS, "trial": ui.FIRE, "assess": ui.STONE, "hold": ui.EMBER}
 
@@ -14,7 +14,8 @@ LEVEL_COLORS = {"adopt": ui.MOSS, "trial": ui.FIRE, "assess": ui.STONE, "hold": 
 DEFAULT_LEVELS = frozenset({"adopt", "trial"})
 
 
-def list_rules(*, theme: str | None, scope: str | None, level: str | None) -> None:
+def rule_list(*, theme: str | None, scope: str | None, level: str | None) -> list[str]:
+    lines: list[str] = []
     matching = [
         rule
         for rule in load_rules()
@@ -28,36 +29,41 @@ def list_rules(*, theme: str | None, scope: str | None, level: str | None) -> No
     ]
     hidden = len(matching) - len(rules) if level is None else 0
     if theme is not None and theme not in THEMES:
-        raise KilnError(f"no theme {theme!r}: {', '.join(THEMES)}")
+        raise IonError(f"no theme {theme!r}: {', '.join(THEMES)}")
     if not rules:
-        print(ui.paint("  no rule matches", ui.STONE))
+        lines.append(ui.paint("  no rule matches", ui.STONE))
         if hidden:
-            print(ui.paint(f"  {hidden} assessed or held: ion repo grid --level assess", ui.STONE))
-        return
+            lines.append(
+                ui.paint(f"  {hidden} assessed or held: ion repo grid --level assess", ui.STONE)
+            )
+        return lines
     width = max(len(rule.id) for rule in rules)
     current = ""
     for rule in rules:
         if rule.theme != current:
             current = rule.theme
-            print(f"\n  {ui.paint(current.upper(), ui.FIRE, bold=True)}")
+            lines.append(f"\n  {ui.paint(current.upper(), ui.FIRE, bold=True)}")
         level = ui.paint(f"{rule.level:<6}", LEVEL_COLORS[rule.level])
-        print(f"    {rule.id:<{width}}  {level}  {rule.title}")
+        lines.append(f"    {rule.id:<{width}}  {level}  {rule.title}")
     scored = sum(rule.is_scored for rule in rules)
-    print(
+    lines.append(
         ui.paint(f"\n  {len(rules)} rules, {scored} scored (adopt). ion repo grid <ID>", ui.STONE)
     )
     if hidden:
-        print(
+        lines.append(
             ui.paint(f"  {hidden} more, assessed or held: ion repo grid --level assess", ui.STONE)
         )
+    return lines
 
 
-def show_rule(rule_id: str) -> None:
+def rule_card(rule_id: str) -> list[str]:
     rule = find_rule(rule_id)
-    print(f"\n  {ui.paint(rule.id, ui.FIRE, bold=True)}  {rule.title}")
-    print(f"  {ui.paint(rule.why, ui.STONE_LIGHT)}\n")
+    lines: list[str] = []
+    lines.append(f"\n  {ui.paint(rule.id, ui.FIRE, bold=True)}  {rule.title}")
+    lines.append(f"  {ui.paint(rule.why, ui.STONE_LIGHT)}\n")
     for label, value in describe(rule):
-        print(f"  {ui.paint(f'{label:<10}', ui.STONE)} {value}")
+        lines.append(f"  {ui.paint(f'{label:<10}', ui.STONE)} {value}")
+    return lines
 
 
 def find_rule(rule_id: str) -> Rule:
@@ -71,7 +77,7 @@ def find_rule(rule_id: str) -> Rule:
     close = [rule.id for rule in rules if words & set(rule.id.split("-"))]
     close = close or difflib.get_close_matches(wanted, [rule.id for rule in rules], n=3)
     hint = f" (did you mean {', '.join(close)}?)" if close else ": ion repo grid lists them"
-    raise KilnError(f"no rule {rule_id}{hint}")
+    raise IonError(f"no rule {rule_id}{hint}")
 
 
 def describe(rule: Rule) -> list[tuple[str, str]]:

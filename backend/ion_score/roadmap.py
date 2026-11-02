@@ -11,11 +11,10 @@ again. `--write` turns the items into tickets of `docs/backlog/backlog.md`, once
 import datetime
 from pathlib import Path
 
-from ion_repo import ui
-from ion_repo.grid import checks
-from ion_repo.grid.score import Finding, Report
-from ion_repo.shell import KilnError
-from ion_repo.tickets import NEXT_FREE, ticket_id
+from ion_score import checks, ui
+from ion_score.score import FAILED, Finding, Report
+from ion_score.shell import IonError
+from ion_score.tickets import NEXT_FREE, ticket_id
 
 BACKLOG = Path("docs") / "backlog" / "backlog.md"
 NORMAL_SECTION = "## 🟡 Normal"
@@ -23,60 +22,74 @@ SHOWN_LOCATIONS = 5
 FALSE_POSITIVE = 'ion repo waive {rule} --paths <file> --permanent --reason "false positive: …"'
 
 
-def show_roadmap(report: Report) -> None:
+def screen(report: Report) -> list[str]:
     items = report.roadmap()
+    lines: list[str] = []
     title = ui.paint("ion-repo roadmap", ui.FIRE, bold=True)
-    print(f"\n  {title}  {ui.paint(f'{len(items)} gap(s) for Claude', ui.GLOW, bold=True)}")
+    lines.append(f"\n  {title}  {ui.paint(f'{len(items)} gap(s) for Claude', ui.GLOW, bold=True)}")
     if not items:
         scripted = sum(found.by_script for found in report.gaps)
         rest = f"; {scripted} closed by script: ion repo fix" if scripted else ""
-        print(ui.paint(f"  Nothing that needs judgment{rest}.", ui.STONE))
-        return
-    print(ui.paint("  Sure gaps first, then the smallest; each one +1 rule met.", ui.STONE))
+        lines.append(ui.paint(f"  Nothing that needs judgment{rest}.", ui.STONE))
+        return lines
+    lines.append(ui.paint("  Sure gaps first, then the smallest; each one +1 rule met.", ui.STONE))
     logs = checks.reverted(Path(report.root)) if report.reverted else {}
     for number, found in enumerate(items, 1):
         mark = ui.paint("  to confirm", ui.FIRE) if found.confirm else ""
-        print(f"\n  {number}. {ui.paint(found.rule, ui.EMBER, bold=True)}  {found.title}{mark}")
-        print(ui.paint(f"     why: {found.why}", ui.STONE_LIGHT))
+        lines.append(
+            f"\n  {number}. {ui.paint(found.rule, ui.EMBER, bold=True)}  {found.title}{mark}"
+        )
+        lines.append(ui.paint(f"     why: {found.why}", ui.STONE_LIGHT))
         for location in found.locations[:SHOWN_LOCATIONS]:
-            print(ui.paint(f"     {location}", ui.STONE))
+            lines.append(ui.paint(f"     {location}", ui.STONE))
         if (more := len(found.locations) - SHOWN_LOCATIONS) > 0:
-            print(
+            lines.append(
                 ui.paint(f"     … and {more} more (ion repo score --rule {found.rule})", ui.STONE)
             )
         if found.detail:
-            print(ui.paint(f"     {found.detail}", ui.STONE))
+            lines.append(ui.paint(f"     {found.detail}", ui.STONE))
         if log := logs.get(found.rule):
-            print(ui.paint(f"     ion repo fix's commit broke a check, set aside: {log}", ui.STONE))
-        print(ui.paint(f"     done when: ion repo score --rule {found.rule}", ui.STONE))
-    print(ui.paint("\n  One at a time with Claude Code: /repo:modernize", ui.STONE))
-    print(ui.paint(f"  A false positive: {FALSE_POSITIVE.format(rule='<ID>')}", ui.STONE))
+            lines.append(
+                ui.paint(f"     ion repo fix's commit broke a check, set aside: {log}", ui.STONE)
+            )
+        lines.append(ui.paint(f"     done when: ion repo score --rule {found.rule}", ui.STONE))
+    lines.append(ui.paint("\n  One at a time with Claude Code: /repo:modernize", ui.STONE))
+    lines.append(ui.paint(f"  A false positive: {FALSE_POSITIVE.format(rule='<ID>')}", ui.STONE))
+    return lines
 
 
-def show_rule(report: Report, found: Finding | None, rule_id: str) -> None:
-    """`--rule ID`: the proof that a gap is closed; fails while it is open."""
+def rule_screen(found: Finding | None, rule_id: str) -> list[str]:
+    """`--rule ID`: the proof that a gap is closed, its places while it is open (`is_open`)."""
     if found is None:
-        raise KilnError(f"{rule_id}: not scored in this repo (unknown, or not for its stacks)")
-    if found.status != "fail":
-        ui.success(f"{rule_id}: {found.status}, {found.title}")
-        return
-    print(f"\n  {ui.paint(rule_id, ui.EMBER, bold=True)}  {found.title}")
+        raise IonError(f"{rule_id}: not scored in this repo (unknown, or not for its stacks)")
+    if not is_open(found):
+        return [f"\n{ui.paint('✓', ui.MOSS, bold=True)} {rule_id}: {found.status}, {found.title}"]
+    lines: list[str] = []
+    lines.append(f"\n  {ui.paint(rule_id, ui.EMBER, bold=True)}  {found.title}")
     for location in found.locations:
-        print(ui.paint(f"    {location}", ui.STONE))
+        lines.append(ui.paint(f"    {location}", ui.STONE))
     if found.detail:
-        print(ui.paint(f"    {found.detail}", ui.STONE))
-    raise KilnError(f"{rule_id} still open ({len(found.locations) or 1} place(s))")
+        lines.append(ui.paint(f"    {found.detail}", ui.STONE))
+    return lines
+
+
+def is_open(found: Finding) -> bool:
+    return found.status == FAILED
+
+
+def still_open(found: Finding) -> IonError:
+    return IonError(f"{found.rule} still open ({len(found.locations) or 1} place(s))")
 
 
 def write_tickets(root: Path, report: Report, today: datetime.date | None = None) -> list[str]:
     """One ticket per roadmap item not tracked yet, under 🟡 Normal; returns their IDs."""
     path = root / BACKLOG
     if not path.exists():
-        raise KilnError(f"no {BACKLOG} in this repo: ion repo adopt sets it up")
+        raise IonError(f"no {BACKLOG} in this repo: ion repo adopt sets it up")
     text = path.read_text()
     match = NEXT_FREE.search(text)
     if match is None or NORMAL_SECTION not in text:
-        raise KilnError(f"{BACKLOG}: no 'Next free: <repo>#T-NN' or no '{NORMAL_SECTION}' section")
+        raise IonError(f"{BACKLOG}: no 'Next free: <repo>#T-NN' or no '{NORMAL_SECTION}' section")
     number = int(match.group(1))
     day = (today or datetime.date.today()).isoformat()
     written, tickets = [], []
