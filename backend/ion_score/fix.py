@@ -24,14 +24,13 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 
-import yaml  # brought by copier
+import yaml
 
-from ion_repo import ui
-from ion_repo.grid import checks, detectors, score
-from ion_repo.grid.facts import read_repo
-from ion_repo.grid.fixers import FIXERS
-from ion_repo.grid.model import Rule, load_rules
-from ion_repo.shell import KilnError
+from ion_score import checks, detectors, score, ui
+from ion_score.facts import read_repo
+from ion_score.fixers import FIXERS
+from ion_score.model import Rule, load_rules
+from ion_score.shell import IonError
 
 UNVERIFIED = "unverified: no check found"
 CLOSED = "closed by an earlier converter"
@@ -62,7 +61,7 @@ def git(root: Path, *arguments: str, check: bool = True) -> str:
         ["git", *arguments], cwd=root, capture_output=True, text=True, check=False
     )
     if check and done.returncode != 0:
-        raise KilnError(f"git {' '.join(arguments)}: {done.stderr.strip() or done.stdout.strip()}")
+        raise IonError(f"git {' '.join(arguments)}: {done.stderr.strip() or done.stdout.strip()}")
     return done.stdout
 
 
@@ -77,7 +76,7 @@ def plan(root: Path, only: str | None = None) -> list[Rule]:
         wanted = only.upper()
         named = [rule for rule in load_rules() if rule.id == wanted]
         if not named:
-            raise KilnError(f"no rule {only}: ion repo grid lists them")
+            raise IonError(f"no rule {only}: ion repo grid lists them")
         if not named[0].is_scored and named[0].fixer in FIXERS:
             return named
         rules = [rule for rule in rules if rule.id == wanted]
@@ -325,7 +324,7 @@ def _status(report: score.Report, rule_id: str) -> str:
 
 def _failure(error: Exception) -> str:
     """What a converter's error says: its own words, or a bug named as one."""
-    if isinstance(error, (OSError, ValueError, KilnError)) and not isinstance(
+    if isinstance(error, (OSError, ValueError, IonError)) and not isinstance(
         error, (UnicodeError, yaml.YAMLError)
     ):
         return str(error)
@@ -365,13 +364,15 @@ def _dry_run(copy: Path, rules: list[Rule]) -> list[Outcome]:
             changed = fixer.convert(read_repo(copy))
         except Exception as error:  # a converter's bug: the next one still shows its diff
             _reset(copy)
-            print(f"\n  {ui.paint(rule.id, ui.FIRE, bold=True)}  not changed: {_failure(error)}")
+            ui.write_line(
+                f"\n  {ui.paint(rule.id, ui.FIRE, bold=True)}  not changed: {_failure(error)}"
+            )
             outcomes.append(Outcome(rule.id, UNCHANGED, note=_failure(error)))
             continue
         _stage(copy, changed)
         diff = git(copy, "diff", "--cached", "--stat")
-        print(f"\n  {ui.paint(rule.id, ui.FIRE, bold=True)}  {fixer.summary}")
-        print(git(copy, "diff", "--cached") or "  (nothing to change)")
+        ui.write_line(f"\n  {ui.paint(rule.id, ui.FIRE, bold=True)}  {fixer.summary}")
+        ui.write_line(git(copy, "diff", "--cached") or "  (nothing to change)")
         git(copy, "commit", "-q", "--allow-empty", "-m", rule.id)
         status = FIXED if diff else UNCHANGED
         outcomes.append(Outcome(rule.id, status, tuple(changed), "dry run"))

@@ -20,7 +20,7 @@ import tomllib
 from dataclasses import dataclass
 from pathlib import Path
 
-from ion_repo.shell import INSTALL_HINTS
+from ion_score.shell import INSTALL_HINTS
 
 CHECK_TIMEOUT = 600
 # Kept from a failing check's output: its end, where the failure is said.

@@ -16,8 +16,8 @@ from collections.abc import Iterator
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 
-from ion_repo.grid.compressor import proof
-from ion_repo.grid.facts import Repo
+from ion_score.compressor import proof
+from ion_score.facts import Repo
 
 CODE, DEPENDENCY, FILE = "code", "dependency", "file"
 VULTURE_LINE = re.compile(

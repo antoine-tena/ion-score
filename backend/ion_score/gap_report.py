@@ -17,9 +17,9 @@ import urllib.parse
 from collections.abc import Callable
 from pathlib import Path
 
-from ion_repo import ui
-from ion_repo.grid.score import Report
-from ion_repo.versions import installed_version
+from ion_score import ui
+from ion_score.score import Report
+from ion_score.versions import installed_version
 
 ION_REPO_REPO = "antoine-tena/ion-repo"
 CONSENT_KEY = "kiln.report-gaps"
@@ -37,9 +37,11 @@ def offer(root: Path, report: Report, ask: Ask | None) -> None:
     lines = [line for line in (*report.uncovered, *report.misfired) if line not in told]
     if not lines:
         return
-    print(f"\n  {ui.paint('Tell ion-repo?', ui.FIRE, bold=True)} It opens an issue with this only:")
+    ui.write_line(
+        f"\n  {ui.paint('Tell ion-repo?', ui.FIRE, bold=True)} It opens an issue with this only:"
+    )
     for line in lines:
-        print(ui.paint(f"    {line}", ui.STONE_LIGHT))
+        ui.write_line(ui.paint(f"    {line}", ui.STONE_LIGHT))
     reply = ask("  [y]es, [n]ot now, ne[v]er for this repo: ").strip().lower()
     if reply.startswith("v"):
         _set_git_config(root, CONSENT_KEY, NEVER)
@@ -60,7 +62,7 @@ def tell(line: str) -> str:
     """Opens the issue, or 👍 the open one with the same title; says what was done."""
     title = title_of(line)
     body = (
-        f"{line}\n\nReported by `ion repo score` (ion-repo {installed_version()}), "
+        f"{line}\n\nReported by `ion repo score` (ion-score {installed_version()}), "
         "with the user's yes."
     )
     if shutil.which("gh") is None:

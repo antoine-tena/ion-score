@@ -11,7 +11,7 @@ import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path, PurePosixPath
 
-from ion_repo.grid import forge
+from ion_score import forge
 
 # Facts a rule may ask for, and what tells them.
 KNOWN_FACTS = (

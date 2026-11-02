@@ -13,11 +13,11 @@ from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from ion_repo import ui
-from ion_repo.grid.compressor import candidates, proof, removal
-from ion_repo.grid.compressor.candidates import CODE, DEPENDENCY, Candidate, Skipped
-from ion_repo.grid.facts import Repo, read_repo
-from ion_repo.shell import KilnError
+from ion_score import ui
+from ion_score.compressor import candidates, proof, removal
+from ion_score.compressor.candidates import CODE, DEPENDENCY, Candidate, Skipped
+from ion_score.facts import Repo, read_repo
+from ion_score.shell import IonError
 
 CODE_PHASE, DEPENDENCY_PHASE = "code", "dependencies"
 MAX_ROUNDS = 5
@@ -50,7 +50,7 @@ def compress(repo: Repo, phase: str) -> list[str]:
     for dropped in base.dropped:
         ui.note(f"Left out of the proof: {dropped}")
     if not base.proves:
-        raise KilnError("no tests to prove a removal with: nothing removed (write tests first)")
+        raise IonError("no tests to prove a removal with: nothing removed (write tests first)")
     ui.note("Proof: " + " → ".join(step.name for step in base.steps) + ", test by test")
     ui.note(
         f"One proof takes about {ui.format_duration(base.seconds)}: at most {MAX_PROOFS}, "

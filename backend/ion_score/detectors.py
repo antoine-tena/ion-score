@@ -23,10 +23,10 @@ from dataclasses import dataclass, field
 from pathlib import PurePosixPath
 from typing import Any
 
-import yaml  # brought by copier
+import yaml
 
-from ion_repo.grid import forge
-from ion_repo.grid.facts import Repo
+from ion_score import forge
+from ion_score.facts import Repo
 
 PASS, FAIL, NOT_APPLICABLE = "pass", "fail", "n/a"
 KINDS = ("file", "regex", "toml", "json", "yaml", "python")
@@ -150,6 +150,7 @@ def _python_spans(text: str) -> tuple[Spans, Spans] | None:
     strings: Spans = []
     comments: Spans = []
     try:
+        # Constant time: a token type of Python's tokenizer, nothing secret.
         for token in tokenize.generate_tokens(io.StringIO(text).readline):
             if token.type in STRING_TOKENS or token.type == tokenize.COMMENT:
                 (start_row, start_column), (end_row, end_column) = token.start, token.end
