@@ -2,7 +2,7 @@
 
 Each scored rule (level `adopt`) whose facts the repo has runs its detector; a rule with nothing
 to look at (`n/a`) or outside the repo's stacks is left out of the count, and a waived one
-(`kiln-waivers.toml`) is shown apart as an accepted deviation; a waiver with `paths` only
+(`waivers.toml`) is shown apart as an accepted deviation; a waiver with `paths` only
 takes out the places it covers (a false positive dismissed there, never flagged again). The
 score is the share of the rules that apply which pass, out of 100, overall and per pillar:
 every rule weighs the same, so the number says how many of today's practices the repo
