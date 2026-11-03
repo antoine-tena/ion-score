@@ -16,7 +16,7 @@ from ion_score.model import LEVELS, THEMES
 from ion_score.shell import IonError
 
 PROGRAM = "ion-score"
-# The installed package the version is read from.
+# The installed package the version is read from, its name on PyPI.
 DISTRIBUTION = "ion-score"
 EXIT_OK = 0
 EXIT_FAILURE = 1

@@ -23,7 +23,7 @@ Backend Python CLI in `backend/`.
 - `charter.toml`: checked rules, budgets. `kiln-waivers.toml`: deviations. `.copier-answers.yml`: settings, via `ion repo set` only.
 
 ## Git
-- **[NO-COMMIT-ON-MAIN]** Never commit on `main` or `develop`: dedicated branch, preferably a worktree (`/repo:worktree`, `.claude/worktrees/`). Merge into `develop` with `/repo:merge`, no PR or approval needed (PR optional for an opinion). Enforced by pre-commit `no-commit-to-branch`, ion-repo's branch guard, GitHub rulesets (`develop` not deletable or force-pushable; `main` only via `/repo:release`).
+- **[NO-COMMIT-ON-MAIN]** Never commit on `main` or `develop`: dedicated branch, preferably a worktree (`/repo:worktree`, `.claude/worktrees/`). Inside it, Claude Code's isolation refuses what it cannot read (`cd`, `git -C`, a variable in a path, a heredoc, a loop, `$(…)`): edit with Edit/Write, send git commands plain and one by one; never dodge it through a script in `/tmp`. Merge into `develop` with `/repo:merge`, no PR or approval needed (PR optional for an opinion). Enforced by pre-commit `no-commit-to-branch`, ion-repo's branch guard, GitHub rulesets (`develop` not deletable or force-pushable; `main` only via `/repo:release`).
 - **[BRANCHES]** `feat/`, `fix/`, `refactor/`, `test/`, `chore/`, `docs/`; lowercase, no spaces (`feat/station-map`).
 - **[COMMITS]** Atomic: max 10 files, title max 50 chars, typed with optional scope (`feat:`, `fix:`, `refactor:`, `style:`, `docs:`, `perf:`, `test:`, `build:`, `ci:`, `chore:`, `revert:`; `fix(map): …`). Claude trailer per machine (`ion repo set ai_trailers=disclose|never`, enforced by branch guard); never `Claude-Session:` or `--author`.
 - **[FETCH-FIRST]** Another session may be merging while you build. Before a decision that rests on the project's setup, and at least before the last commits: `git fetch`, read `git log HEAD..origin/<integration>`, merge what it gained into the branch early rather than late.
@@ -32,3 +32,4 @@ Backend Python CLI in `backend/`.
 ## Work
 - **[REPRODUCE-FIRST]** Reproduce a bug (failing test or command) before fixing. Check any diagnosis, yours or another session's, on a copy first.
 - **[DIRECT-LINKS]** Online step asked of a human: give its direct link, never a menu path.
+- **[CLAUDE-CODE-REACH]** Before saying Claude Code cannot do something (display, behavior), check settings, themes, hooks and plugin mods (`modules` in a plugin's `hooks/hooks.json`, `on('ui.render', …)` redraws a message): a mod often can.
