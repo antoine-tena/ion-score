@@ -1,5 +1,5 @@
 # ion-repo's answers for this project: never edit by hand, `ion repo set` changes them.
-_commit: v0.4.11-23-g18e2da7
+_commit: v0.4.12-130-g60803b0
 _src_path: https://github.com/antoine-tena/ion-repo.git
 backend: cli
 ci_runner: local
@@ -17,7 +17,7 @@ plugin_name: score
 podman: false
 prod_health_url: ''
 project_type: cli
-pypi_name: ''
+pypi_name: ion-score
 serena: false
 size: small
 statusline_ci: true

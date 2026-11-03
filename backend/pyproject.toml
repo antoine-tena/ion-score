@@ -1,7 +1,9 @@
 [project]
+# The name on PyPI (`.github/workflows/pypi.yml`); the command stays `ion-score`.
 name = "ion-score"
 version = "0.1.0"
 description = "Le moteur de r\u00e8gles de la famille Ion : les r\u00e8gles sourc\u00e9es et la note."
+license = "MIT"
 requires-python = ">=3.14"
 dependencies = [
     "pyyaml>=6.0.3",

@@ -12,7 +12,8 @@ ion repo install
 ```
 
 Puis lancer l'outil : `cd backend && uv run ion-score --help`, ou l'installer sur le poste par
-`uv tool install --editable backend`.
+`uv tool install --editable backend`. Sans le dépôt, dès sa première publication sur PyPI :
+`uv tool install ion-score`.
 
 ## Équipe
 
