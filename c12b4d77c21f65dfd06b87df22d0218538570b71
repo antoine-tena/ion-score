@@ -1,0 +1,7 @@
+kiln ci: success
+commit: c12b4d77c21f65dfd06b87df22d0218538570b71
+date: 2026-11-03T23:44:21+01:00
+machine: DESKTOP-93QNEIL
+duration: 0 min 02 s
+jobs replayed: charter ok, secrets-scan ok, security ok
+not replayed: backend (workflow python not replayed locally yet)
