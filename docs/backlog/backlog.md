@@ -40,8 +40,9 @@ commun (`ui`, `shell`, `waivers`, `rule_ids`).
 - [x] `ion repo grid|score|fix` appellent `ion_score.cli` ; `ion-score grid|grade|fix` en propre.
 - [x] Une seule source pour les ID de règles (`rule_ids.py`), lue par le `charter` de ion-repo.
 - [ ] Le contrat entre ion-score et ion-repo écrit (`docs/contract.md`, comme ion-render), versionné.
-- [ ] ion-score sur PyPI (`ion-score`) et public **avant la prochaine release de ion-repo** : ion-repo
-  est public, sa CI ne lit pas un dépôt privé (dépendance git en attendant PyPI).
+- [x] ion-score sur PyPI (`ion-score`) et public **avant la prochaine release de ion-repo** : ion-repo
+  est public, sa CI ne lit pas un dépôt privé (dépendance git en attendant PyPI). Public, 0.1.2 sur
+  PyPI le 2026-11-03 (noms sans kiln, `waivers_path`).
 - [x] Mesuré : même note, règle par règle, avant et après, sur les repos d'entraînement (2026-11-02, quatre copies : identiques).
 
 Côté ion-repo : ion-repo#T-393.
