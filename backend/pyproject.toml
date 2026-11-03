@@ -1,27 +1,32 @@
 [project]
-name = "cone"
+# The name on PyPI (`.github/workflows/pypi.yml`); the command stays `ion-score`.
+name = "ion-score"
 version = "0.1.0"
-description = "Le moteur de r\u00e8gles de la famille Keramos : les r\u00e8gles sourc\u00e9es et la note."
+description = "Le moteur de r\u00e8gles de la famille Ion : les r\u00e8gles sourc\u00e9es et la note."
+license = "MIT"
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "pyyaml>=6.0.3",
+]
 
-# The installed command: `uv run cone` in backend/, or `uv tool install --editable backend`.
+# The installed command: `uv run ion-score` in backend/, or `uv tool install --editable backend`.
 [project.scripts]
-cone = "cone.cli:main"
+ion-score = "ion_score.cli:main"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["cone"]
+packages = ["ion_score"]
 
 [dependency-groups]
 dev = [
     "mypy>=2.4.0,<3.0.0",
     "pytest>=9.1.1,<10.0.0",
     "pytest-cov>=7.1.0,<8.0.0",
-    "ruff>=0.16.10,<0.17.0",
+    "ruff>=0.17.2,<0.18.0",
+    "types-pyyaml>=6.0.12.20261030",
 ]
 
 [tool.ruff]
@@ -36,6 +41,9 @@ strict = true
 
 [tool.pytest.ini_options]
 python_files = ["test_*.py"]
+# End-to-end tests (slow, networked) run only when asked: `uv run pytest -m e2e`.
+addopts = "-m 'not e2e'"
+markers = ["e2e: end to end, slow and networked (uv run pytest -m e2e)"]
 
 [tool.coverage.run]
-source = ["cone"]
+source = ["ion_score"]

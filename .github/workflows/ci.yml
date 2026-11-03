@@ -1,35 +1,35 @@
 name: CI
 
-# The reusable workflows live in kiln (antoine-tena/kiln, public), cited at the kiln release the
-# project comes from (develop): `kiln update` moves them to the next one. The project only
+# The reusable workflows live in ion-repo (antoine-tena/ion-repo, public), cited at the ion-repo release the
+# project comes from (develop): `ion repo update` moves them to the next one. The project only
 # keeps its parameters here.
 on:
-  # The CI of each push runs on the machine (`kiln ci`, verdict kept as a git note): no GitHub
+  # The CI of each push runs on the machine (`ion repo ci`, verdict kept as a git note): no GitHub
   # minutes. On GitHub, by hand: Actions, CI, Run workflow. Back on each push:
-  # `kiln set ci_runner=github`.
+  # `ion repo set ci_runner=github`.
   workflow_dispatch:
   # Callable from another workflow of the repo.
   workflow_call:
 
-# [WORKFLOW-PERMISSIONS]: the token reads the repo, nothing more; kiln's workflows need no more.
+# [WORKFLOW-PERMISSIONS]: the token reads the repo, nothing more; ion-repo's workflows need no more.
 permissions:
   contents: read
 
 jobs:
   backend:
-    uses: antoine-tena/kiln/.github/workflows/python.yml@develop
+    uses: antoine-tena/ion-repo/.github/workflows/python.yml@9c8373b67d6bfd371960a41b6f213b3b524f0925 # develop
     with:
       directory: backend
 
   charter:
-    uses: antoine-tena/kiln/.github/workflows/charter.yml@develop
+    uses: antoine-tena/ion-repo/.github/workflows/charter.yml@9c8373b67d6bfd371960a41b6f213b3b524f0925 # develop
 
   # [SECRETS]: gitleaks searches the whole history, with no organisation licence.
   secrets-scan:
-    uses: antoine-tena/kiln/.github/workflows/secrets.yml@develop
+    uses: antoine-tena/ion-repo/.github/workflows/secrets.yml@9c8373b67d6bfd371960a41b6f213b3b524f0925 # develop
 
   security:
-    uses: antoine-tena/kiln/.github/workflows/security.yml@develop
+    uses: antoine-tena/ion-repo/.github/workflows/security.yml@9c8373b67d6bfd371960a41b6f213b3b524f0925 # develop
     with:
       uv: "backend"
       pnpm: ""

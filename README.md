@@ -1,62 +1,73 @@
-# cone
+# score
 
-Le moteur de règles de la famille Keramos : les règles sourcées et la note.
+Le moteur de règles de la famille Ion : les règles sourcées et la note.
 
 ## Démarrage rapide
 
 Après le clone, depuis la racine du dépôt (prérequis : [uv](https://docs.astral.sh/uv/)) :
 
 ```sh
-uv tool install kiln-cli   # une fois par poste
-kiln install
+uv tool install ion-sh && ion add repo   # une fois par poste
+ion repo install
 ```
 
-Puis lancer l'outil : `cd backend && uv run cone --help`, ou l'installer sur le poste par
-`uv tool install --editable backend`.
+Puis lancer l'outil : `cd backend && uv run ion-score --help`, ou l'installer sur le poste par
+`uv tool install --editable backend`. Sans le dépôt, dès sa première publication sur PyPI :
+`uv tool install ion-score`.
 
 ## Équipe
 
 - [@antoine-tena](https://github.com/antoine-tena)
-- [@amnkd555](https://github.com/amnkd555)
 
 ## Organisation
 
-- `backend/` : l'outil en ligne de commande `cone`.
-- [`CLAUDE.md`](CLAUDE.md) et [`.claude/rules/kiln/`](.claude/rules/kiln/) : la charte du code
+- `backend/` : l'outil en ligne de commande `ion-score` et la grille (`backend/ion_score/rules/`,
+  une règle sourcée par fichier), venue d'ion-repo avec son historique. ion-repo dépend du paquet
+  `ion-score` : `ion repo grid`, `ion repo score` et `ion repo fix` appellent son code.
+- [`CLAUDE.md`](CLAUDE.md) et [`.claude/rules/ion-repo/`](.claude/rules/ion-repo/) : la charte du code
   et la façon de travailler, pour les humains comme pour les agents.
 - `.vscode/` : réglages et extensions recommandées, partagés par toute l'équipe.
+- `plugins/score/` et `.claude-plugin/marketplace.json` : le plugin Claude Code de la
+  commande, et le catalogue qui le publie.
 
-Le projet est généré et tenu à jour par [kiln](https://github.com/antoine-tena/kiln). Changer un
-paramètre (équipe, frameworks, podman…) : `kiln set <clé>=<valeur>`, sur une branche.
+Le projet est généré et tenu à jour par [ion-repo](https://github.com/antoine-tena/ion-repo). Changer un
+paramètre (équipe, frameworks, podman…) : `ion repo set <clé>=<valeur>`, sur une branche.
 
 ## Installation
 
 Prérequis : ceux du démarrage rapide.
-`kiln install` installe les dépendances (backend) et active les garde-fous du
+`ion repo install` installe les dépendances (backend) et active les garde-fous du
 commit (pre-commit, dont le refus de commiter sur `main` ou `develop`). On peut la relancer sans
 risque.
 
 ## Lancer le projet
 
 ```sh
-cd backend && uv run cone --help
+cd backend && uv run ion-score --help
 uv tool install --editable backend   # depuis la racine : la commande sur tout le poste
 ```
+
+- `ion-score grid [ID]` : les règles tenues pour les meilleures, avec leurs sources (`--theme`,
+  `--scope`, `--level`).
+- `ion-score grade [chemin]` : la note d'un dépôt face à la grille (`--json`, `--badge`, `--all`,
+  `--roadmap [--write]`, `--rule ID`, `--against REF`, `--online`).
+- `ion-score fix [chemin]` : ferme par script les écarts qu'un script sait fermer (`--dry-run`,
+  `--rule ID`).
 
 ## Vérifier le code
 
 ```sh
-kiln check
+ion repo check
 ```
 
 Ruff, mypy et pytest pour chaque projet Python, puis la charte (`charter`).
 
 ## Mettre à jour
 
-Sur une branche dédiée, avec un arbre propre : `kiln update` (mises à jour compatibles) ou
-`kiln update --major` (versions majeures comprises). La commande rapporte les évolutions de kiln
+Sur une branche dédiée, avec un arbre propre : `ion repo update` (mises à jour compatibles) ou
+`ion repo update --major` (versions majeures comprises). La commande rapporte les évolutions d'ion-repo
 sans écraser les modifications locales, met à jour les dépendances, puis lance les contrôles.
-Avec Claude Code, le skill `/kiln:update` fait tout : l'outil kiln, puis le dépôt.
+Avec Claude Code, le skill `/repo:update` fait tout : l'outil ion-repo, puis le dépôt.
 
 ## Suivi du travail
 
@@ -66,7 +77,7 @@ priorité), `done.md` (ceux qui sont faits), `rejected.md` (ce qui a été refus
 ## Contribuer
 
 1. Créer une branche depuis `develop` : `feat/…`, `fix/…` ([BRANCHES]).
-2. Respecter la charte ([`.claude/rules/kiln/`](.claude/rules/kiln/), [`CLAUDE.md`](CLAUDE.md)).
+2. Respecter la charte ([`.claude/rules/ion-repo/`](.claude/rules/ion-repo/), [`CLAUDE.md`](CLAUDE.md)).
 3. Fusionner la branche dans `develop` (`git merge --no-ff`, puis push), sans attendre
-   d'approbation : skill `/kiln:merge` avec Claude Code. Une pull request reste possible pour
+   d'approbation : skill `/repo:merge` avec Claude Code. Une pull request reste possible pour
    demander un avis. On ne commite jamais directement sur `main` ou `develop`.

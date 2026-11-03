@@ -1,23 +1,15 @@
-# cone
+# score
 
-Le moteur de règles de la famille Keramos : les règles sourcées et la note.
-
-<!-- This file belongs to the project: kiln wrote it once and never changes it. kiln's rules live
-in .claude/rules/kiln/ and are kept current by `kiln update`. Write here what Claude cannot
-guess about this project, and keep it under 200 lines: every session reads it. -->
+Le moteur de règles de la famille Ion : les règles sourcées et la note.
 
 ## Repo map
 
-Where to look, so as not to explore: read it before opening files, and update it in the commit
-that adds, moves or removes a directory, a domain or an entry point. One line per place, what
-it holds; no copy of the code.
-
-- `backend/cone/`: commands (`cli.py`, entry point `__main__.py`) and
-  business logic; `backend/tests/`: tests.
-- `docs/backlog/`: the work to do; `charter.toml`: the checked rules; `.claude/rules/kiln/`:
-  kiln's rules for Claude.
-
-## Notes
-
-<!-- Decisions, conventions and pitfalls of this project that Claude cannot guess from the code:
-"we never call X directly, always through Y", "the staging database is reset every night"… -->
+- `backend/ion_score/`: `cli.py` (`grid`, `grade`, `fix`; ion-repo builds `ion repo grid|score|fix`
+  from its `add_*_arguments`/`run_*`), entry point `__main__.py`. The grid: `rules/<theme>/<ID>.toml`,
+  `model.py`, `facts.py`, `detectors.py`, `forge.py` (`gh`, cached a day), `score.py`, `show.py`,
+  `roadmap.py`, `gap_report.py`, `fixers/`, `fix.py`, `checks.py`, `compressor/`. Ground shared
+  with ion-repo, which imports it: `ui.py`, `shell.py` (`IonError` = ion-repo's `KilnError`),
+  `waivers.py`, `rule_ids.py`, `tickets.py`.
+- `backend/tests/`: each rule's pass/fail examples in `test_grid.py`; `conftest.py` (git config
+  aside, `gh` off).
+- `docs/backlog/`; `charter.toml`; `.claude/rules/ion-repo/`.
