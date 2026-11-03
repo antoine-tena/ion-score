@@ -54,6 +54,16 @@ uv tool install --editable backend   # depuis la racine : la commande sur tout l
 - `ion-score fix [chemin]` : ferme par script les écarts qu'un script sait fermer (`--dry-run`,
   `--rule ID`).
 
+Ce que l'outil lit et écrit hors de son code (les noms d'avant, du temps de kiln, restent lus) :
+
+- `waivers.toml` à la racine du dépôt noté : les dérogations (`kiln-waivers.toml` lu s'il est
+  seul ; les deux présents, c'est une erreur : garder `waivers.toml`).
+- `~/.cache/ion-score/` : les réglages GitHub lus (un jour) et les worktrees jetables de `fix` ;
+  ceux laissés sous `~/.cache/kiln/worktrees` sont retirés.
+- `.git/ion-score/fix/` : les journaux des convertisseurs défaits (`.git/kiln/fix/` lu).
+- `git config ion-score.report-gaps`, `ion-score.reported-gap` : le consentement à signaler les
+  manques de la grille (`kiln.*` lu).
+
 ## Vérifier le code
 
 ```sh
