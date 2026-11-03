@@ -146,7 +146,7 @@ def test_the_same_repo_gets_the_same_score_and_nothing_is_written(tmp_path: Path
 def test_a_waived_gap_is_shown_apart_and_not_counted(tmp_path: Path) -> None:
     root = make(tmp_path, {**GOOD, "app.py": "try:\n    pass\nexcept:\n    pass\n"})
     assert statuses(score.score_repo(root))["BARE-EXCEPT"] == "fail"
-    (root / "kiln-waivers.toml").write_text(
+    (root / "waivers.toml").write_text(
         '[[waiver]]\nrule = "BARE-EXCEPT"\nreason = "legacy scripts"\nby = "a"\n'
         'since = 2026-10-20\nuntil = "never"\n'
     )
@@ -261,7 +261,7 @@ def test_the_roadmap_leaves_scripts_out_and_puts_sure_gaps_first(tmp_path: Path)
 
 def test_a_false_positive_dismissed_on_its_path_is_never_flagged_again(tmp_path: Path) -> None:
     root = make(tmp_path, LEGACY)
-    (root / "kiln-waivers.toml").write_text(
+    (root / "waivers.toml").write_text(
         '[[waiver]]\nrule = "SQL-PARAMETERS"\npaths = ["db.py"]\n'
         'reason = "false positive: a constant"\nby = "a"\nsince = 2026-10-20\nuntil = "never"\n'
     )
