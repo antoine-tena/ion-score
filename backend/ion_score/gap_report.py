@@ -22,8 +22,11 @@ from ion_score.score import Report
 from ion_score.versions import installed_version
 
 ION_REPO_REPO = "antoine-tena/ion-repo"
-CONSENT_KEY = "kiln.report-gaps"
-TOLD_KEY = "kiln.reported-gap"
+CONSENT_KEY = "ion-score.report-gaps"
+TOLD_KEY = "ion-score.reported-gap"
+# Their names before the Ion family (kiln until 31 October 2026), still read.
+LEGACY_CONSENT_KEY = "kiln.report-gaps"
+LEGACY_TOLD_KEY = "kiln.reported-gap"
 NEVER = "never"
 GH_TIMEOUT = 20
 
@@ -31,9 +34,12 @@ Ask = Callable[[str], str]
 
 
 def offer(root: Path, report: Report, ask: Ask | None) -> None:
-    if ask is None or _git_config(root, CONSENT_KEY) == NEVER:
+    if ask is None or NEVER in (
+        _git_config(root, CONSENT_KEY),
+        _git_config(root, LEGACY_CONSENT_KEY),
+    ):
         return
-    told = set(_git_config_all(root, TOLD_KEY))
+    told = {*_git_config_all(root, TOLD_KEY), *_git_config_all(root, LEGACY_TOLD_KEY)}
     lines = [line for line in (*report.uncovered, *report.misfired) if line not in told]
     if not lines:
         return
