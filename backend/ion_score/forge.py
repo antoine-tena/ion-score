@@ -79,7 +79,7 @@ def settings(root: Path) -> Settings | None:
 
 def _cache_path(slug: str) -> Path:
     base = os.environ.get("XDG_CACHE_HOME") or Path.home() / ".cache"
-    return Path(base) / "kiln" / "forge" / f"{slug.replace('/', '__')}.json"
+    return Path(base) / "ion-score" / "forge" / f"{slug.replace('/', '__')}.json"
 
 
 def _cached(slug: str) -> Settings | None:
