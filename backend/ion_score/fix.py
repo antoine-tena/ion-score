@@ -35,7 +35,9 @@ from ion_score.shell import IonError
 UNVERIFIED = "unverified: no check found"
 CLOSED = "closed by an earlier converter"
 # Throwaway worktrees go to the cache folder: /tmp may be in memory, a big repo would fill it.
-SCRATCH = Path.home() / ".cache" / "kiln" / "worktrees"
+SCRATCH = Path.home() / ".cache" / "ion-score" / "worktrees"
+# Their place before the Ion family (kiln until 31 October 2026): what is left there is orphaned.
+LEGACY_SCRATCH = Path.home() / ".cache" / "kiln" / "worktrees"
 # Out of git but needed by the checks, at the root and one folder down: the installed Node
 # dependencies (linked) and the local settings (copied). Python's are made by `uv run` itself.
 LINKED = ("node_modules",)
@@ -179,6 +181,7 @@ def _branch(root: Path, base: str = "") -> tuple[str, bool]:
 def scratch_worktree(root: Path, *options: str, ref: str = "HEAD") -> Iterator[Path]:
     """A worktree of the last commit out of the user's tree (`options`: `--detach`, or `-b`
     and a branch), with what the checks need from the tree; removed afterwards, its branch kept."""
+    remove_legacy_worktrees(root)
     SCRATCH.mkdir(parents=True, exist_ok=True)
     scratch = Path(tempfile.mkdtemp(prefix="ion-repo-fix-", dir=SCRATCH))
     copy = scratch / "repo"
@@ -189,6 +192,17 @@ def scratch_worktree(root: Path, *options: str, ref: str = "HEAD") -> Iterator[P
     finally:
         git(root, "worktree", "remove", "--force", str(copy), check=False)
         shutil.rmtree(scratch, ignore_errors=True)
+
+
+def remove_legacy_worktrees(root: Path) -> None:
+    """The repo's worktrees left under the old place by a run cut short: no run uses it now."""
+    for line in git(root, "worktree", "list", "--porcelain", check=False).splitlines():
+        path = Path(line.removeprefix("worktree "))
+        if line.startswith("worktree ") and path.is_relative_to(LEGACY_SCRATCH):
+            git(root, "worktree", "remove", "--force", str(path), check=False)
+            folder = LEGACY_SCRATCH / path.relative_to(LEGACY_SCRATCH).parts[0]
+            shutil.rmtree(folder, ignore_errors=True)
+    git(root, "worktree", "prune", check=False)
 
 
 def _bring_local_files(root: Path, copy: Path) -> None:

@@ -1,5 +1,6 @@
-"""Waivers: deliberate deviations from an ion-repo rule, declared in `kiln-waivers.toml` at the root
-of the repo. ion-repo never generates nor rewrites that file.
+"""Waivers: deliberate deviations from an ion-repo rule, declared in `waivers.toml` at the root of
+the repo (`kiln-waivers.toml` before the Ion family, still read). ion-repo never generates nor
+rewrites that file.
 
 A waiver covers a rule (`rule`, an identifier of the charter), in the whole repo or in `paths`
 (git patterns), with a reason, an author and an expiry. Trust is earned: the first period lasts
@@ -20,7 +21,9 @@ from typing import Any
 
 from ion_score.rule_ids import rule_id
 
-WAIVERS_FILE = "kiln-waivers.toml"
+WAIVERS_FILE = "waivers.toml"
+# Its name before the Ion family (kiln until 31 October 2026), still read.
+LEGACY_WAIVERS_FILE = "kiln-waivers.toml"
 RULE_ID = "WAIVERS"
 # Longest period, by number of renewals (the last tier repeats).
 TIERS_DAYS = (7, 30, 90, 182)
@@ -77,15 +80,28 @@ def is_waivable(rule: str) -> bool:
     return rule_id(rule) not in NOT_WAIVABLE
 
 
-def load(root: Path, today: datetime.date | None = None) -> Waivers:
+def waivers_path(root: Path) -> Path:
+    """The waivers file in use: `waivers.toml`, else the `kiln-waivers.toml` of before; the new
+    name when there is neither, where a first waiver goes."""
     path = root / WAIVERS_FILE
+    legacy = root / LEGACY_WAIVERS_FILE
+    return legacy if legacy.exists() and not path.exists() else path
+
+
+def load(root: Path, today: datetime.date | None = None) -> Waivers:
+    path = waivers_path(root)
     result = Waivers()
+    if (root / LEGACY_WAIVERS_FILE).exists() and path.name == WAIVERS_FILE:
+        result.errors.append(
+            f"{WAIVERS_FILE} and {LEGACY_WAIVERS_FILE} both present: keep {WAIVERS_FILE}, move "
+            f"what {LEGACY_WAIVERS_FILE} still holds into it, then delete {LEGACY_WAIVERS_FILE}"
+        )
     if not path.exists():
         return result
     try:
         data = tomllib.loads(path.read_text("utf-8"))
     except tomllib.TOMLDecodeError as error:
-        result.errors.append(f"{WAIVERS_FILE} unreadable: {error}")
+        result.errors.append(f"{path.name} unreadable: {error}")
         return result
     today = today or datetime.date.today()
     for index, entry in enumerate(data.get("waiver", []), start=1):

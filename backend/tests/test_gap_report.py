@@ -84,6 +84,26 @@ def test_an_open_issue_for_the_same_gap_gets_a_thumbs_up_instead(repo: Path, gh:
     ) in gh.calls
 
 
+def test_the_kiln_never_of_before_still_holds(repo: Path, gh: FakeGh) -> None:
+    subprocess.run(["git", "config", "kiln.report-gaps", "never"], cwd=repo, check=True)
+
+    gap_report.offer(repo, score.score_repo(repo), lambda prompt: pytest.fail("asked"))
+
+    assert gh.calls == []
+
+
+def test_lines_told_under_the_kiln_key_of_before_are_not_offered_again(
+    repo: Path, gh: FakeGh
+) -> None:
+    report = score.score_repo(repo)
+    for line in (*report.uncovered, *report.misfired):
+        subprocess.run(["git", "config", "--add", "kiln.reported-gap", line], cwd=repo, check=True)
+
+    gap_report.offer(repo, report, lambda prompt: pytest.fail("asked"))
+
+    assert report.uncovered and gh.calls == []
+
+
 def test_never_holds_for_the_repo_and_no_terminal_asks_nothing(repo: Path, gh: FakeGh) -> None:
     report = score.score_repo(repo)
 

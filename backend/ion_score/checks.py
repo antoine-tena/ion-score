@@ -42,7 +42,9 @@ NODE_LOCKS = (
 NODE_SCRIPTS = ("lint", "typecheck", "test")
 MANIFESTS = ("pyproject.toml", "package.json", "manage.py")
 SKIPPED_FOLDERS = frozenset({"node_modules", "dist", "build", "venv"})
-LOGS = Path("kiln") / "fix"
+LOGS = Path("ion-score") / "fix"
+# Their place before the Ion family (kiln until 31 October 2026), still read.
+LEGACY_LOGS = Path("kiln") / "fix"
 # The tag of the images `ion repo fix` builds to prove a converter: overwritten at each build.
 BUILT_IMAGE = "localhost/ion-repo-fix-check:latest"
 
@@ -202,7 +204,7 @@ def _text(output: str | bytes | None) -> str:
     return output or ""
 
 
-def logs_dir(root: Path) -> Path | None:
+def logs_dir(root: Path, logs: Path = LOGS) -> Path | None:
     """Where the logs of reverted converters live: the git folder, never committed."""
     try:
         common = subprocess.run(
@@ -214,7 +216,7 @@ def logs_dir(root: Path) -> Path | None:
         ).stdout.strip()
     except OSError, subprocess.CalledProcessError:
         return None
-    return Path(common) / LOGS
+    return Path(common) / logs
 
 
 def keep_log(root: Path, rule: str, result: Result, branch: str = "") -> Path | None:
@@ -230,14 +232,18 @@ def keep_log(root: Path, rule: str, result: Result, branch: str = "") -> Path | 
 
 
 def forget_log(root: Path, rule: str) -> None:
-    folder = logs_dir(root)
-    if folder is not None:
-        (folder / f"{rule}.log").unlink(missing_ok=True)
+    for logs in (LEGACY_LOGS, LOGS):
+        folder = logs_dir(root, logs)
+        if folder is not None:
+            (folder / f"{rule}.log").unlink(missing_ok=True)
 
 
 def reverted(root: Path) -> dict[str, Path]:
-    """The rules whose converter `ion repo fix` had to undo, with the log of the check it broke."""
-    folder = logs_dir(root)
-    if folder is None or not folder.is_dir():
-        return {}
-    return {path.stem: path for path in sorted(folder.glob("*.log"))}
+    """The rules whose converter `ion repo fix` had to undo, with the log of the check it broke;
+    a log of the new place wins over the old place's."""
+    found: dict[str, Path] = {}
+    for logs in (LEGACY_LOGS, LOGS):
+        folder = logs_dir(root, logs)
+        if folder is not None and folder.is_dir():
+            found.update({path.stem: path for path in folder.glob("*.log")})
+    return dict(sorted(found.items()))
