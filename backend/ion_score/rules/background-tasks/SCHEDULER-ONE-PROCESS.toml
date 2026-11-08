@@ -1,0 +1,17 @@
+id = "SCHEDULER-ONE-PROCESS"
+title = "One process alone runs the APScheduler scheduler"
+pillar = "methods"
+theme = "background-tasks"
+scope = { kind = "tool", name = "apscheduler" }
+level = "assess"
+regime = "strict"
+profiles = ["association", "company", "university", "enterprise"]
+why = "Each web worker starting its own scheduler runs every job once per worker, or misses some."
+detectable = "judgment"
+fixable = "judgment"
+since = "0.4.16"
+
+[[sources]]
+url = "https://apscheduler.readthedocs.io/en/3.x/faq.html"
+kind = "docs"
+checked = 2026-11-09

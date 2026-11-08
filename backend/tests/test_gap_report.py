@@ -52,6 +52,16 @@ def test_a_known_package_the_grid_does_not_cover_is_named_and_a_private_one_neve
     assert not any("acme" in line for line in report.uncovered)
 
 
+def test_apscheduler_is_covered_by_the_grid(tmp_path: Path) -> None:
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    (tmp_path / "pyproject.toml").write_text(
+        '[project]\nname = "x"\ndependencies = ["apscheduler>=3"]\n'
+    )
+    subprocess.run(["git", "-C", str(tmp_path), "add", "-A"], check=True)
+
+    assert not any("apscheduler" in line for line in score.score_repo(tmp_path).uncovered)
+
+
 def test_a_yes_opens_one_issue_with_the_line_only_and_never_offers_it_again(
     repo: Path, gh: FakeGh
 ) -> None:
