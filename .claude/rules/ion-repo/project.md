@@ -8,7 +8,7 @@ Backend Python CLI in `backend/`.
 
 ## Commands
 - `cd backend && uv run ion-score --help`: run the tool; `uv tool install --editable backend`: install on the machine.
-- `ion repo check`: every check of the stack (ruff, mypy, pytest), then `charter`. Run before saying a change is done.
+- `ion repo check`: the stack's checks (ruff, mypy, pytest), then `charter`, on what the branch changed, tests only with `--tests`; `--all` the whole repo, as on a `release/` branch. Run before saying a change is done.
 - Python dependency: `uv add <package>` in its directory (`--dev` for a tool).
 - `ion repo update`: ion-repo improvements and compatible upgrades, on a branch, checks included. `ion repo set key=value`: change a project setting.
 
@@ -20,7 +20,7 @@ Backend Python CLI in `backend/`.
 - README describes the project now: a command, setting, route or run change updates it in the same branch.
 - `docs/backlog/`, only work list (`/repo:backlog`): `backlog.md` (open `ion-score#T-NN` by priority, format in its `README.md`), `done.md`, `rejected.md`, `urgent.md` (human-only).
 - `.claude/` committed: `settings.json`, `skills/`, `rules/`, `hooks/`, `plans/`; ignored: `settings.local.json`, `worktrees/`, `memory/`, `sessions/`.
-- `charter.toml`: checked rules, budgets. `kiln-waivers.toml`: deviations. `.copier-answers.yml`: settings, via `ion repo set` only.
+- `charter.toml`: checked rules, budgets. `waivers.toml`: deviations. `.copier-answers.yml`: settings, via `ion repo set` only.
 
 ## Git
 - **[NO-COMMIT-ON-MAIN]** Never commit on `main` or `develop`: dedicated branch, preferably a worktree (`/repo:worktree`, `.claude/worktrees/`). Inside it, Claude Code's isolation refuses what it cannot read (`cd`, `git -C`, a variable in a path, a heredoc, a loop, `$(…)`): edit with Edit/Write, send git commands plain and one by one; never dodge it through a script in `/tmp`. Merge into `develop` with `/repo:merge`, no PR or approval needed (PR optional for an opinion). Enforced by pre-commit `no-commit-to-branch`, ion-repo's branch guard, GitHub rulesets (`develop` not deletable or force-pushable; `main` only via `/repo:release`).
