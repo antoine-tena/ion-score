@@ -1,5 +1,5 @@
 # ion-repo's answers for this project: never edit by hand, `ion repo set` changes them.
-_commit: v0.4.12-138-gdbccd8c
+_commit: v0.4.15-10-g7bff8db
 _src_path: https://github.com/antoine-tena/ion-repo.git
 backend: cli
 ci_runner: local
@@ -10,6 +10,7 @@ description: 'Le moteur de règles de la famille Ion : les règles sourcées et 
 frontend: none
 language: fr
 language_custom: false
+license: ''
 name: ion-score
 north_star: Chaque règle sourcée et notée
 owner: antoine-tena

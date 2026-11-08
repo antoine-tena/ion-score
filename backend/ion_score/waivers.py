@@ -1,5 +1,5 @@
 """Waivers: deliberate deviations from an ion-repo rule, declared in `waivers.toml` at the root of
-the repo (`kiln-waivers.toml` before the Ion family, still read). ion-repo never generates nor
+the repo (`waivers.toml` before the Ion family, still read). ion-repo never generates nor
 rewrites that file.
 
 A waiver covers a rule (`rule`, an identifier of the charter), in the whole repo or in `paths`
@@ -23,7 +23,7 @@ from ion_score.rule_ids import rule_id
 
 WAIVERS_FILE = "waivers.toml"
 # Its name before the Ion family (kiln until 31 October 2026), still read.
-LEGACY_WAIVERS_FILE = "kiln-waivers.toml"
+LEGACY_WAIVERS_FILE = "waivers.toml"
 RULE_ID = "WAIVERS"
 # Longest period, by number of renewals (the last tier repeats).
 TIERS_DAYS = (7, 30, 90, 182)
@@ -81,7 +81,7 @@ def is_waivable(rule: str) -> bool:
 
 
 def waivers_path(root: Path) -> Path:
-    """The waivers file in use: `waivers.toml`, else the `kiln-waivers.toml` of before; the new
+    """The waivers file in use: `waivers.toml`, else the `waivers.toml` of before; the new
     name when there is neither, where a first waiver goes."""
     path = root / WAIVERS_FILE
     legacy = root / LEGACY_WAIVERS_FILE

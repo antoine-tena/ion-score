@@ -6,11 +6,22 @@ Everything left to do on score, in a single list ordered by priority. Started on
 
 North star: **Chaque règle sourcée et notée**.
 
-**Next free: ion-score#T-04.**
+**Next free: ion-score#T-05.**
 
 ---
 
 ## 🔴 Critical
+
+### ion-score#T-04 · Finish the ion-repo update to v0.4.15
+- **Type**: task
+- **Status**: todo
+- **Opened**: 2026-11-09
+- **Effort**: XS · **Owner**: — · **Due**: —
+- **Origin**: release notes of the ion-repo releases crossed (`ion repo update`)
+
+What ion-repo cannot guess, to fill in right after the update (`/repo:update`):
+- [ ] run `ion repo install --machine` so the status line runs on ion-repo's Python (it stayed empty on macOS). (v0.4.13)
+- [ ] run `ion repo tickets` if the update had nobody to ask. (v0.4.14)
 
 ### ion-score#T-02 · Finish the ion-repo update to v0.4.11
 - **Type**: task

@@ -1,4 +1,4 @@
-"""The waivers file: `waivers.toml`, and the `kiln-waivers.toml` of before still read."""
+"""The waivers file: `waivers.toml`, and the `waivers.toml` of before still read."""
 
 import datetime
 from pathlib import Path
@@ -23,18 +23,18 @@ def test_waivers_toml_is_read(tmp_path: Path) -> None:
 
 
 def test_kiln_waivers_toml_alone_is_still_read(tmp_path: Path) -> None:
-    (tmp_path / "kiln-waivers.toml").write_text(WAIVER)
+    (tmp_path / "waivers.toml").write_text(WAIVER)
 
     found = waivers.load(tmp_path, TODAY)
 
     assert [waiver.rule for waiver in found.actives] == ["BARE-EXCEPT"]
     assert not found.errors
-    assert waivers.waivers_path(tmp_path) == tmp_path / "kiln-waivers.toml"
+    assert waivers.waivers_path(tmp_path) == tmp_path / "waivers.toml"
 
 
 def test_both_files_is_an_error_saying_which_to_keep(tmp_path: Path) -> None:
     (tmp_path / "waivers.toml").write_text(WAIVER)
-    (tmp_path / "kiln-waivers.toml").write_text(WAIVER.replace("BARE-EXCEPT", "LOGGING"))
+    (tmp_path / "waivers.toml").write_text(WAIVER.replace("BARE-EXCEPT", "LOGGING"))
 
     found = waivers.load(tmp_path, TODAY)
 

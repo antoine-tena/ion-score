@@ -56,7 +56,7 @@ uv tool install --editable backend   # depuis la racine : la commande sur tout l
 
 Ce que l'outil lit et écrit hors de son code (les noms d'avant, du temps de kiln, restent lus) :
 
-- `waivers.toml` à la racine du dépôt noté : les dérogations (`kiln-waivers.toml` lu s'il est
+- `waivers.toml` à la racine du dépôt noté : les dérogations (`waivers.toml` lu s'il est
   seul ; les deux présents, c'est une erreur : garder `waivers.toml`).
 - `~/.cache/ion-score/` : les réglages GitHub lus (un jour) et les worktrees jetables de `fix` ;
   ceux laissés sous `~/.cache/kiln/worktrees` sont retirés.
