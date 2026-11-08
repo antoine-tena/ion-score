@@ -6,7 +6,7 @@ Everything left to do on score, in a single list ordered by priority. Started on
 
 North star: **Chaque règle sourcée et notée**.
 
-**Next free: ion-score#T-05.**
+**Next free: ion-score#T-6.**
 
 ---
 
@@ -59,6 +59,16 @@ commun (`ui`, `shell`, `waivers`, `rule_ids`).
 Côté ion-repo : ion-repo#T-393.
 
 ## 🟡 Normal
+
+### ion-score#T-5 · Compter les valeurs en dur restantes
+- **Type**: improvement
+- **Status**: todo
+- **Opened**: 2026-11-09
+- **Effort**: M · **Owner**: — · **Due**: —
+- **Origin**: `/learn:distill` des sessions du 2026-11-03 au 2026-11-09, « il reste des jetons ? » quatre fois, chaque recherche à la main en trouvait d'autres (`d92265f7` 22:25-22:42)
+
+- [ ] Un rapport déterministe : couleurs, tailles arbitraires, adresses de pages et textes répétés, attributs comme `link-to` compris.
+- [ ] Le chiffre sert de réponse et de cliquet.
 
 ### ion-score#T-03 · Ramener sous 300 lignes les douze fichiers venus de ion-repo
 - **Type**: improvement
