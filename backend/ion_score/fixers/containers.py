@@ -218,8 +218,16 @@ HARDENING = (
     ("security_opt", "security_opt: [no-new-privileges:true]"),
     ("tmpfs", "tmpfs: [/tmp]"),
 )
+# The official postgres image starts as root: it takes over its data folder, then drops to its own
+# user. DAC_READ_SEARCH only matters from the second start on, when that folder is already closed.
+POSTGRES_HARDENING = (
+    *(entry for entry in HARDENING if entry[0] != "tmpfs"),
+    ("cap_add", "cap_add: [CHOWN, DAC_READ_SEARCH, FOWNER, SETGID, SETUID]"),
+    ("tmpfs", "tmpfs: [/tmp, /var/run/postgresql]"),
+)
 START_TIMEOUT = 600
-SETTLE_SECONDS = 5
+SETTLE_SECONDS = 30
+TASK_SECONDS = 120
 _SERVICE = re.compile(r"^(?P<indent>\s+)(?P<name>[\w.-]+):\s*(#.*)?$")
 
 
@@ -245,6 +253,18 @@ def _is_hardened(settings: dict[str, object]) -> bool:
         and "ALL" in [str(cap).upper() for cap in caps]
         and isinstance(options, list)
         and any("no-new-privileges" in str(option) for option in options)
+    )
+
+
+def _hardening(settings: dict[str, object]) -> tuple[tuple[str, str], ...]:
+    """The keys a service lacks; a postgres with its own `user` needs no capability back."""
+    image = str(settings.get("image", "")).split("@")[0].rsplit("/", 1)[-1].split(":")[0]
+    entries = POSTGRES_HARDENING if image == "postgres" else HARDENING
+    has_user = "user" in settings
+    return tuple(
+        (key, entry)
+        for key, entry in entries
+        if key not in settings and not (key == "cap_add" and has_user)
     )
 
 
@@ -283,7 +303,7 @@ def harden_text(text: str, services: list[str]) -> str:
         child = child if child > depth else depth + 2
         if not out[-1].endswith("\n"):
             out[-1] += "\n"
-        out += [" " * child + f"{entry}\n" for key, entry in HARDENING if key not in own]
+        out += [" " * child + f"{entry}\n" for _, entry in _hardening(own)]
     return "".join(out)
 
 
@@ -305,28 +325,83 @@ def harden_compose(repo: Repo) -> list[str]:
         )
     changed: list[str] = []
     left: list[str] = []
+    unproven: list[str] = []
     for name, services in targets.items():
         text = repo.text(name)
-        started = _starts(repo.root, name, harden_text(text, services), services)
+        started = _proven(repo.root, name, text, services)
         final = harden_text(text, [service for service in services if service in started])
         if final != text:
             (repo.root / name).write_text(final, encoding="utf-8")
             changed.append(name)
-        left += [f"{name} ({service})" for service in services if service not in started]
-    if not changed:
-        raise IonError(f"no service starts hardened: {', '.join(left)}")
+        missing = [service for service in services if service not in started]
+        # A service that does not stay up unhardened either says nothing about hardening.
+        plain = _starts(repo.root, name, text, services) if missing else set()
+        left += [f"{name} ({service})" for service in missing if service in plain]
+        unproven += [f"{name} ({service})" for service in missing if service not in plain]
+    reasons = []
     if left:
-        ui.note(f"left as they were, they do not start hardened: {', '.join(left)}")
+        reasons.append(f"left as they were, they do not start hardened: {', '.join(left)}")
+    if unproven:
+        reasons.append(
+            "left as they were, not provable here (a one-off task, or a service that does not"
+            f" stay up unhardened either): {', '.join(unproven)}"
+        )
+    if not changed:
+        raise IonError("; ".join(reasons))
+    for reason in reasons:
+        ui.note(reason)
     return changed
+
+
+def _proven(root: Path, name: str, text: str, services: list[str]) -> set[str]:
+    """The services that hold hardened together. A one-off task that fails takes down those that
+    wait for it: it goes first, alone, and the others get another round without it."""
+    kept, tasks = list(services), _tasks(text)
+    while kept:
+        started = _starts(root, name, harden_text(text, kept), services)
+        failed = [service for service in kept if service not in started]
+        if not failed:
+            break
+        dropped = [service for service in failed if service in tasks] or failed
+        kept = [service for service in kept if service not in dropped]
+    return set(kept)
+
+
+def _tasks(text: str) -> set[str]:
+    """The services another one waits for with `service_completed_successfully`."""
+    return {
+        awaited
+        for settings in (yaml.safe_load(text).get("services") or {}).values()
+        if isinstance(settings, dict) and isinstance(settings.get("depends_on"), dict)
+        for awaited, rule in settings["depends_on"].items()
+        if (rule or {}).get("condition") == "service_completed_successfully"
+    }
+
+
+def _isolated(text: str) -> str:
+    """The compose file of the throwaway copy: no published port, fixed container name, nor
+    volume shared by name, all of which the user's own stack may hold; no profile either:
+    podman-compose starts nothing at all when one service named to it sits behind a profile."""
+    compose = yaml.safe_load(text)
+    for settings in compose["services"].values():
+        if isinstance(settings, dict):
+            settings.pop("ports", None)
+            settings.pop("container_name", None)
+            settings.pop("profiles", None)
+    for volume in (compose.get("volumes") or {}).values():
+        if isinstance(volume, dict):
+            volume.pop("name", None)
+            volume.pop("external", None)
+    return yaml.safe_dump(compose, sort_keys=False)
 
 
 def _podman_ready() -> bool:
     return shutil.which("podman") is not None and shutil.which("podman-compose") is not None
 
 
-def _starts(root: Path, name: str, hardened: str, services: list[str]) -> set[str]:
-    """The services podman keeps running, hardened, on a copy of the repo: their own project
-    name, no fixed container name, so that nothing the user runs is touched."""
+def _starts(root: Path, name: str, text: str, services: list[str]) -> set[str]:
+    """The services podman keeps running with that compose file, on a copy of the repo: their own
+    project name, isolated, so that nothing the user runs is touched."""
     project = f"ion-repo-harden-{os.getpid()}"
     with tempfile.TemporaryDirectory(prefix="ion-repo-harden-") as scratch:
         copy = Path(scratch) / "repo"
@@ -339,10 +414,11 @@ def _starts(root: Path, name: str, hardened: str, services: list[str]) -> set[st
         if not copy.is_dir():
             return set()
         compose = copy / name
-        compose.write_text(re.sub(r"(?m)^\s+container_name:.*\n", "", hardened), encoding="utf-8")
-        command = ["podman-compose", "-p", project, "-f", str(compose)]
+        compose.write_text(_isolated(text), encoding="utf-8")
+        # One build at a time: services sharing a Dockerfile, built together without cache, fail.
+        command = ["podman-compose", "--parallel", "1", "-p", project, "-f", str(compose)]
         # Building the images can take minutes: said, so that the run does not look stuck.
-        label = f"podman builds and starts {', '.join(services)} hardened, on a throwaway copy"
+        label = f"podman builds and starts {', '.join(services)}, on a throwaway copy"
         if not shell.shows_spinner():
             ui.note(f"{label} (up to {START_TIMEOUT // 60} min)")
         try:
@@ -355,7 +431,12 @@ def _starts(root: Path, name: str, hardened: str, services: list[str]) -> set[st
                     check=False,
                 )
                 time.sleep(SETTLE_SECONDS)
-            return {service for service in services if _running(project, service)}
+            tasks = _tasks(text)
+            return {
+                service
+                for service in services
+                if (_finished if service in tasks else _running)(project, service)
+            }
         except subprocess.TimeoutExpired:
             return set()
         finally:
@@ -370,19 +451,32 @@ def _starts(root: Path, name: str, hardened: str, services: list[str]) -> set[st
             )
 
 
-def _running(project: str, service: str) -> bool:
-    listed = subprocess.run(
+def _state(project: str, service: str) -> list[str]:
+    """Status, exit code and restart count of a service's container; empty when it has none."""
+    shown = subprocess.run(
         [
-            "podman", "ps", "-q",
+            "podman", "ps", "-a",
             "--filter", f"label=io.podman.compose.project={project}",
             "--filter", f"label=io.podman.compose.service={service}",
-            "--filter", "status=running",
+            "--format", "{{.State}} {{.ExitCode}} {{.Restarts}}",
         ],
         capture_output=True,
         text=True,
         check=False,
     )  # fmt: skip
-    return bool(listed.stdout.strip())
+    return shown.stdout.split()
+
+
+def _running(project: str, service: str) -> bool:
+    """Up, and never restarted by its policy: a crash loop is up now and then."""
+    return _state(project, service)[::2] == ["running", "0"]
+
+
+def _finished(project: str, service: str) -> bool:
+    deadline = time.monotonic() + TASK_SECONDS
+    while (state := _state(project, service))[:1] == ["running"] and time.monotonic() < deadline:
+        time.sleep(1)
+    return state[:2] == ["exited", "0"]
 
 
 register(Fixer("harden_compose", harden_compose, "compose services hardened", network=True))
