@@ -156,6 +156,61 @@ def test_a_service_that_does_not_start_hardened_is_left_as_it_was(
     assert "compose.yaml (web)" in capsys.readouterr().out
 
 
+def test_postgres_keeps_the_capabilities_it_starts_with() -> None:
+    caps = "cap_add: [CHOWN, DAC_READ_SEARCH, FOWNER, SETGID, SETUID]"
+    text = containers.harden_text(
+        "services:\n  db:\n    image: docker.io/library/postgres:18-alpine\n", ["db"]
+    )
+    assert caps in text
+    assert "tmpfs: [/tmp, /var/run/postgresql]" in text
+    own_user = "services:\n  db:\n    image: postgres:18\n    user: postgres\n"
+    assert "cap_add" not in containers.harden_text(own_user, ["db"])
+    assert "cap_add" not in containers.harden_text("services:\n  a:\n    image: redis\n", ["a"])
+
+
+def test_the_throwaway_copy_takes_nothing_the_user_runs() -> None:
+    text = (
+        "services:\n  db:\n    image: postgres\n    container_name: shop-db\n    profiles: [dev]\n"
+        '    ports:\n      - "5432:5432"\n    volumes: [pg:/var/lib/postgresql]\n'
+        "volumes:\n  pg:\n    name: shop_pg\n"
+    )
+    isolated = containers._isolated(text)
+    assert not [word for word in ("ports", "5432", "shop", "profiles") if word in isolated]
+    assert "pg:/var/lib/postgresql" in isolated
+
+
+def test_a_service_down_unhardened_too_is_not_blamed_on_hardening(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = make(tmp_path, {"compose.yaml": "services:\n  a:\n    image: x\n  b:\n    image: y\n"})
+    monkeypatch.setattr(
+        containers,
+        "_starts",
+        lambda root, name, text, services: set() if "read_only" in text else {"a"},
+    )
+    with pytest.raises(IonError) as refused:
+        containers.harden_compose(read_repo(root))
+    hard, unproven = str(refused.value).split("; ")
+    assert "(a)" in hard and "(b)" not in hard
+    assert "not provable here" in unproven and "(b)" in unproven
+
+
+def test_a_failed_task_does_not_drag_down_those_that_wait_for_it(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    text = (
+        "services:\n  migrate:\n    image: x\n  app:\n    image: y\n    depends_on:\n"
+        "      migrate:\n        condition: service_completed_successfully\n"
+    )
+    migrate = "migrate:\n    read_only"
+    monkeypatch.setattr(
+        containers,
+        "_starts",
+        lambda root, name, text, services: set() if migrate in text else {"app", "migrate"},
+    )
+    assert containers._proven(tmp_path, "compose.yaml", text, ["migrate", "app"]) == {"app"}
+
+
 def test_hardening_is_never_guessed_without_podman(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
