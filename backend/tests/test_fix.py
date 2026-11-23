@@ -854,3 +854,12 @@ def test_a_second_run_of_a_converter_changes_nothing(tmp_path: Path, rule_id: st
     git(root, "commit", "-q", "--allow-empty", "-m", "first run")
     convert(read_repo(root))
     assert git(root, "status", "--porcelain") == ""
+
+
+def test_the_proof_starts_what_the_services_wait_for() -> None:
+    text = (
+        "services:\n  migrate:\n    image: x\n  backend:\n    image: x\n    depends_on: [migrate]\n"
+        "  worker:\n    image: x\n    depends_on:\n      backend:\n"
+        "        condition: service_healthy\n"
+    )
+    assert containers._with_dependencies(text, ["worker"]) == ["worker", "backend", "migrate"]
