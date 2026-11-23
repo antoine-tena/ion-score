@@ -227,7 +227,8 @@ POSTGRES_HARDENING = (
 )
 START_TIMEOUT = 600
 SETTLE_SECONDS = 30
-TASK_SECONDS = 120
+# A migration on a fresh database can take minutes: a task gets as long as a start.
+TASK_SECONDS = START_TIMEOUT
 _SERVICE = re.compile(r"^(?P<indent>\s+)(?P<name>[\w.-]+):\s*(#.*)?$")
 
 
@@ -378,6 +379,21 @@ def _tasks(text: str) -> set[str]:
     }
 
 
+def _with_dependencies(text: str, services: list[str]) -> list[str]:
+    """`services` and those they wait for, however deep: podman-compose creates no container
+    whose dependency it was not asked to start."""
+    settings = yaml.safe_load(text).get("services") or {}
+    wanted, pending = list(services), list(services)
+    while pending:
+        own = settings.get(pending.pop()) or {}
+        needs = own.get("depends_on") if isinstance(own, dict) else None
+        for needed in needs or []:
+            if needed in settings and needed not in wanted:
+                wanted.append(needed)
+                pending.append(needed)
+    return wanted
+
+
 def _isolated(text: str) -> str:
     """The compose file of the throwaway copy: no published port, fixed container name, nor
     volume shared by name, all of which the user's own stack may hold; no profile either:
@@ -424,7 +440,7 @@ def _starts(root: Path, name: str, text: str, services: list[str]) -> set[str]:
         try:
             with shell.spinner_line(label) if shell.shows_spinner() else contextlib.nullcontext():
                 subprocess.run(
-                    [*command, "up", "-d", *services],
+                    [*command, "up", "-d", *_with_dependencies(text, services)],
                     cwd=compose.parent,
                     capture_output=True,
                     timeout=START_TIMEOUT,
@@ -436,6 +452,7 @@ def _starts(root: Path, name: str, text: str, services: list[str]) -> set[str]:
                 service
                 for service in services
                 if (_finished if service in tasks else _running)(project, service)
+                and (service in tasks or _writes_its_volumes(project, service))
             }
         except subprocess.TimeoutExpired:
             return set()
@@ -470,6 +487,40 @@ def _state(project: str, service: str) -> list[str]:
 def _running(project: str, service: str) -> bool:
     """Up, and never restarted by its policy: a crash loop is up now and then."""
     return _state(project, service)[::2] == ["running", "0"]
+
+
+def _podman_text(*arguments: str) -> str:
+    return subprocess.run(
+        ["podman", *arguments], capture_output=True, text=True, check=False
+    ).stdout.strip()
+
+
+def _writes_its_volumes(project: str, service: str) -> bool:
+    """Each folder its image declares a volume writable: redis keeps running for minutes on a
+    read-only /data, then refuses every write at its first save."""
+    container = f"{project}_{service}_1"
+    image = _podman_text("inspect", "--format", "{{.ImageName}}", container)
+    declared = _podman_text("image", "inspect", "--format", "{{json .Config.Volumes}}", image)
+    try:
+        folders = list(json.loads(declared or "null") or {})
+    except json.JSONDecodeError:
+        return False
+    return all(
+        subprocess.run(
+            [
+                "podman",
+                "exec",
+                container,
+                "sh",
+                "-c",
+                f'touch "{folder}/.ion-probe" && rm "{folder}/.ion-probe"',
+            ],
+            capture_output=True,
+            check=False,
+        ).returncode
+        == 0
+        for folder in folders
+    )
 
 
 def _finished(project: str, service: str) -> bool:
